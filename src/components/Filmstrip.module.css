@@ -1,6 +1,7 @@
 /* Thumbnails share the row's width and shrink together, so the strip never
    makes the page scroll sideways. */
 .strip {
+  view-transition-name: artwork-strip;
   display: flex;
   flex: 1;
   justify-content: center;

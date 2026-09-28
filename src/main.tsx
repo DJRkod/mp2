@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import 'normalize.css'
 import './styles/tokens.css'
 import './index.css'
+import './styles/transitions.css'
 import App from './App.tsx'
 import { CollectionProvider } from './collection/CollectionProvider.tsx'
 

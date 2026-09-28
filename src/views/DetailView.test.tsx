@@ -1,6 +1,6 @@
 import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/artic'
 import { makeTrail, saveTrail } from '../browse/trail'
 import { work } from '../test/fixtures'
@@ -40,6 +40,98 @@ function strip() {
 function fact(name: string) {
   return screen.getByText(name, { selector: 'dt' }).nextElementSibling
 }
+
+type Decode = () => Promise<void>
+const imagePrototype = HTMLImageElement.prototype as { decode?: Decode }
+const transitions = document as { startViewTransition?: unknown }
+
+afterEach(() => {
+  delete imagePrototype.decode
+  delete transitions.startViewTransition
+})
+
+describe('moving between artworks', () => {
+  it('changes inside a view transition once the next picture is ready', async () => {
+    const user = userEvent.setup()
+    let pictureReady = () => {}
+    imagePrototype.decode = () =>
+      new Promise((resolve) => {
+        pictureReady = resolve
+      })
+    const start = vi.fn((update: () => void) => update())
+    transitions.startViewTransition = start
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+
+    await user.click(screen.getByRole('link', { name: /Next/ }))
+    expect(start).not.toHaveBeenCalled()
+    expect(screen.getByTestId('address')).toHaveTextContent('/artwork/3')
+
+    pictureReady()
+    await title('Fourth')
+    expect(start).toHaveBeenCalledTimes(1)
+  })
+
+  it('counts every press when arrow keys are pressed faster than pictures load', async () => {
+    const user = userEvent.setup()
+    const ready: (() => void)[] = []
+    imagePrototype.decode = () => new Promise((resolve) => ready.push(resolve))
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/1', { works })
+    await title('The Bedroom')
+    const before = ready.length
+
+    await user.keyboard('{ArrowRight}{ArrowRight}{ArrowRight}')
+    expect(screen.getByTestId('address')).toHaveTextContent('/artwork/1')
+    ready.slice(before).forEach((resolve) => resolve())
+    await title('Fourth')
+  })
+
+  it('leaves a click with a modifier key to the browser', async () => {
+    const start = vi.fn((update: () => void) => update())
+    transitions.startViewTransition = start
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+    const next = screen.getByRole('link', { name: /Next/ })
+    const allowed = fireEvent.click(next, { ctrlKey: true })
+    expect(allowed).toBe(true)
+    expect(start).not.toHaveBeenCalled()
+    expect(screen.getByTestId('address')).toHaveTextContent('/artwork/3')
+  })
+
+  it('does not move after the visitor has left the page', async () => {
+    const user = userEvent.setup()
+    let pictureReady = () => {}
+    imagePrototype.decode = () =>
+      new Promise((resolve) => {
+        pictureReady = resolve
+      })
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+    await user.click(screen.getByRole('link', { name: /Next/ }))
+    await user.click(screen.getByRole('link', { name: 'Rooms' }))
+    pictureReady()
+    await screen.findByRole('heading', { level: 1, name: 'The rooms' })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(screen.getByTestId('address')).toHaveTextContent('/rooms')
+  })
+
+  it('loads the neighbouring pictures ahead of time', async () => {
+    const asked: string[] = []
+    imagePrototype.decode = function (this: HTMLImageElement) {
+      asked.push(this.src)
+      return Promise.resolve()
+    }
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+    expect(asked.some((src) => src.includes('image-2/full/843'))).toBe(true)
+    expect(asked.some((src) => src.includes('image-4/full/843'))).toBe(true)
+  })
+})
 
 describe('DetailView', () => {
   it('shows the facts and the position in the trail', async () => {

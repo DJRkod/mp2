@@ -16,6 +16,7 @@
 }
 
 .position {
+  view-transition-name: artwork-position;
   color: var(--muted);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
@@ -43,6 +44,7 @@
 
 /* The frame hugs the image, whatever its proportions. */
 .frame {
+  view-transition-name: artwork;
   min-width: 6rem;
   min-height: 6rem;
   border: 8px solid var(--frame);
@@ -53,6 +55,7 @@
 
 /* The museum wall label beside the work. */
 .label {
+  view-transition-name: artwork-label;
   padding: var(--space-5);
   border: 1px solid var(--line);
   background: var(--paper);

@@ -1,0 +1,88 @@
+/*
+ * Moving between artworks on the detail page.
+ *
+ * The frame, the wall label, the position and the filmstrip are each given a
+ * view-transition-name where they are styled. The browser pictures each one
+ * before and after the change and animates between the two, including the
+ * change in the size of the frame.
+ */
+
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: 340ms;
+  animation-timing-function: cubic-bezier(0.22, 0.7, 0.2, 1);
+}
+
+/* Only the named parts move; the rest of the page stays still. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* The old and new pictures fill the frame while it changes size. */
+::view-transition-old(artwork),
+::view-transition-new(artwork) {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  mix-blend-mode: normal;
+}
+
+::view-transition-image-pair(artwork) {
+  isolation: auto;
+}
+
+/* The old picture swells and blurs away; the new one comes into focus. */
+::view-transition-old(artwork) {
+  animation-name: artwork-warp-out;
+}
+
+::view-transition-new(artwork) {
+  animation-name: artwork-warp-in;
+}
+
+@keyframes artwork-warp-out {
+  to {
+    transform: scale(1.09);
+    filter: blur(10px);
+    opacity: 0;
+  }
+}
+
+@keyframes artwork-warp-in {
+  from {
+    transform: scale(0.93);
+    filter: blur(10px);
+    opacity: 0;
+  }
+}
+
+/* Visitors who ask for less motion get a short, plain dissolve. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 120ms;
+  }
+
+  ::view-transition-old(artwork) {
+    animation-name: artwork-fade-out;
+  }
+
+  ::view-transition-new(artwork) {
+    animation-name: artwork-fade-in;
+  }
+}
+
+@keyframes artwork-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes artwork-fade-in {
+  from {
+    opacity: 0;
+  }
+}

@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { loadTrail, makeTrail, navigate as navigateTrail, toEntry } from '../browse/trail'
+import type { TrailEntry } from '../browse/trail'
 import { useCollection } from '../collection/CollectionContext'
 import { ArtworkImage } from '../components/ArtworkImage'
+import { preloadImage, withViewTransition } from '../components/artworkTransition'
 import { Filmstrip } from '../components/Filmstrip'
 import { StatusMessage } from '../components/StatusMessage'
 import { usePageTitle } from '../components/usePageTitle'
@@ -71,25 +74,69 @@ export function DetailView() {
       saved && saved.entries.some((entry) => entry.id === work.id)
         ? saved
         : makeTrail(starter, '/')
-    return { ...navigateTrail(trail, toEntry(work)), returnTo: trail.returnTo }
+    return { ...navigateTrail(trail, toEntry(work)), trail, returnTo: trail.returnTo }
   }, [work, ready, starter])
 
-  const previousId = navigation?.previous.id
-  const nextId = navigation?.next.id
+  // The work a step is heading for, from the press until that work is on the
+  // page, and a count that lets a newer step call off an older one.
+  const heading = useRef<TrailEntry | null>(null)
+  const latestStep = useRef(0)
 
   useEffect(() => {
-    if (previousId === undefined || nextId === undefined) return
+    if (heading.current?.id === id) heading.current = null
+  }, [id])
+
+  useEffect(
+    () => () => {
+      // Leaving the detail page calls off a step that is still waiting.
+      latestStep.current += 1
+    },
+    [],
+  )
+
+  const stepTo = useCallback(
+    async (entry: TrailEntry) => {
+      const step = ++latestStep.current
+      heading.current = entry
+      // Wait for the picture, so the change never shows an empty frame.
+      await preloadImage(entry.imageId)
+      if (step !== latestStep.current) return
+      withViewTransition(() => goTo(`/artwork/${entry.id}`))
+    },
+    [goTo],
+  )
+
+  useEffect(() => {
+    if (!navigation) return
+    const { trail, previous, next } = navigation
+    // Have the neighbours' pictures ready before they are asked for.
+    void preloadImage(previous.imageId)
+    void preloadImage(next.imageId)
+
     function onKey(event: KeyboardEvent) {
       // A held key repeats; one press is one step.
       if (event.repeat) return
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (isTyping(event.target)) return
-      if (event.key === 'ArrowLeft') goTo(`/artwork/${previousId}`)
-      if (event.key === 'ArrowRight') goTo(`/artwork/${nextId}`)
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+      // Presses made while a picture loads carry on from where the last one
+      // was heading, so none is lost.
+      const from = heading.current
+        ? navigateTrail(trail, heading.current)
+        : { previous, next }
+      void stepTo(event.key === 'ArrowLeft' ? from.previous : from.next)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [previousId, nextId, goTo])
+  }, [navigation, stepTo])
+
+  function onStep(event: MouseEvent<HTMLAnchorElement>, entry: TrailEntry) {
+    // Clicks that open a new tab or window are left to the browser.
+    if (event.button !== 0) return
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+    event.preventDefault()
+    void stepTo(entry)
+  }
 
   usePageTitle(work ? orUnknown(work.title, 'Untitled') : 'Artwork')
 
@@ -180,14 +227,20 @@ export function DetailView() {
             className={styles.step}
             to={`/artwork/${navigation.previous.id}`}
             rel="prev"
+            onClick={(event) => onStep(event, navigation.previous)}
           >
             <span aria-hidden="true">←</span> Previous
           </Link>
-          <Filmstrip strip={navigation.strip} currentId={work.id} />
+          <Filmstrip
+            strip={navigation.strip}
+            currentId={work.id}
+            onStep={onStep}
+          />
           <Link
             className={styles.step}
             to={`/artwork/${navigation.next.id}`}
             rel="next"
+            onClick={(event) => onStep(event, navigation.next)}
           >
             Next <span aria-hidden="true">→</span>
           </Link>
