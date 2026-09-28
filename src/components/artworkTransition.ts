@@ -38,12 +38,17 @@ export function forgetPreloadedImages(): void {
   pictures.clear()
 }
 
+/** Forward for Next, back for Previous. */
+export type Travel = 'forward' | 'back'
+
 /**
  * Makes a change to the page inside a view transition, so the browser can
- * animate from the old state to the new one. Browsers without view
+ * animate from the old state to the new one. The direction of travel is
+ * written on the root element for the styles to read. Browsers without view
  * transitions make the change directly.
  */
-export function withViewTransition(change: () => void): void {
+export function withViewTransition(change: () => void, travel: Travel): void {
+  document.documentElement.dataset.travel = travel
   if (typeof document.startViewTransition !== 'function') {
     change()
     return

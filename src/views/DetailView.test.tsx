@@ -48,6 +48,91 @@ const transitions = document as { startViewTransition?: unknown }
 afterEach(() => {
   delete imagePrototype.decode
   delete transitions.startViewTransition
+  delete document.documentElement.dataset.travel
+})
+
+/** Records which way the page said it was travelling when each move began. */
+function recordTravel() {
+  const travel: (string | undefined)[] = []
+  transitions.startViewTransition = (update: () => void) => {
+    travel.push(document.documentElement.dataset.travel)
+    update()
+  }
+  return travel
+}
+
+describe('the direction of travel', () => {
+  it('is forward for Next and back for Previous', async () => {
+    const user = userEvent.setup()
+    const travel = recordTravel()
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+    await user.click(screen.getByRole('link', { name: /Next/ }))
+    await title('Fourth')
+    await user.click(screen.getByRole('link', { name: /Previous/ }))
+    await title('Third')
+    expect(travel).toEqual(['forward', 'back'])
+  })
+
+  it('is forward for the right arrow key and back for the left', async () => {
+    const user = userEvent.setup()
+    const travel = recordTravel()
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+    await user.keyboard('{ArrowRight}')
+    await title('Fourth')
+    await user.keyboard('{ArrowLeft}')
+    await title('Third')
+    expect(travel).toEqual(['forward', 'back'])
+  })
+
+  it('follows the side of the filmstrip a thumbnail is on', async () => {
+    const user = userEvent.setup()
+    const travel = recordTravel()
+    saveTrail(makeTrail(works, '/'))
+    renderApp('/artwork/4', { works })
+    await title('Fourth')
+    const strip = () => screen.getByRole('list', { name: 'Neighbouring artworks' })
+    await user.click(within(strip()).getByRole('link', { name: 'Sixth' }))
+    await title('Sixth')
+    await user.click(within(strip()).getByRole('link', { name: 'Fourth' }))
+    await title('Fourth')
+    expect(travel).toEqual(['forward', 'back'])
+  })
+
+  it('wraps: Next from the last work still travels forward', async () => {
+    const user = userEvent.setup()
+    const travel = recordTravel()
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/5', { works })
+    await title('Fifth')
+    await user.click(screen.getByRole('link', { name: /Next/ }))
+    await title('The Bedroom')
+    expect(travel).toEqual(['forward'])
+  })
+})
+
+describe('the wall label', () => {
+  it('marks each fact so its row and its value can move on their own', async () => {
+    renderApp('/artwork/1', { works })
+    await title('The Bedroom')
+    const rows = [...document.querySelectorAll('dl > div')].map((row) => row.className)
+    expect(rows).toHaveLength(7)
+    expect(new Set(rows).size).toBe(7)
+    for (const [index, key] of ['artist', 'date', 'medium', 'department', 'type', 'origin', 'style'].entries()) {
+      expect(rows[index]).toContain('fact')
+      expect(rows[index].split(' ')).toContain(key)
+    }
+  })
+
+  it('keeps a row for a missing fact, shown as Unknown', async () => {
+    renderApp('/artwork/5', { works })
+    await title('Fifth')
+    expect(document.querySelectorAll('dl > div')).toHaveLength(7)
+    expect(fact('Place of origin')).toHaveTextContent('Unknown')
+  })
 })
 
 describe('moving between artworks', () => {

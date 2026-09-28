@@ -1,17 +1,27 @@
 /*
  * Moving between artworks on the detail page.
  *
- * The frame, the wall label, the position and the filmstrip are each given a
- * view-transition-name where they are styled. The browser pictures each one
- * before and after the change and animates between the two, including the
- * change in the size of the frame.
+ * The frame, the wall label's card, its title, each row and each value, the
+ * position and the filmstrip are given view-transition names where they are
+ * styled. The browser pictures each one before and after the change and
+ * animates between the two.
+ *
+ * The page says which way it is travelling with data-travel on the root
+ * element: "forward" for Next, "back" for Previous. Going forward, what you
+ * pass leaves to the left and what you reach arrives from the right, as if
+ * walking along the wall.
  */
+
+:root {
+  --artwork-step: 340ms;
+  --artwork-ease: cubic-bezier(0.22, 0.7, 0.2, 1);
+}
 
 ::view-transition-group(*),
 ::view-transition-old(*),
 ::view-transition-new(*) {
-  animation-duration: 340ms;
-  animation-timing-function: cubic-bezier(0.22, 0.7, 0.2, 1);
+  animation-duration: var(--artwork-step);
+  animation-timing-function: var(--artwork-ease);
 }
 
 /* Only the named parts move; the rest of the page stays still. */
@@ -19,6 +29,8 @@
 ::view-transition-new(root) {
   animation: none;
 }
+
+/* ---- The picture: it warps, leaning the way the page is travelling ---- */
 
 /* The old and new pictures fill the frame while it changes size. */
 ::view-transition-old(artwork),
@@ -33,29 +45,196 @@
   isolation: auto;
 }
 
-/* The old picture swells and blurs away; the new one comes into focus. */
 ::view-transition-old(artwork) {
-  animation-name: artwork-warp-out;
+  animation-name: artwork-leave-left;
 }
 
 ::view-transition-new(artwork) {
-  animation-name: artwork-warp-in;
+  animation-name: artwork-arrive-from-right;
 }
 
-@keyframes artwork-warp-out {
+:root[data-travel='back']::view-transition-old(artwork) {
+  animation-name: artwork-leave-right;
+}
+
+:root[data-travel='back']::view-transition-new(artwork) {
+  animation-name: artwork-arrive-from-left;
+}
+
+@keyframes artwork-leave-left {
   to {
-    transform: scale(1.09);
+    transform: translateX(-5%) scale(1.09);
     filter: blur(10px);
     opacity: 0;
   }
 }
 
-@keyframes artwork-warp-in {
+@keyframes artwork-arrive-from-right {
   from {
-    transform: scale(0.93);
+    transform: translateX(5%) scale(0.93);
     filter: blur(10px);
     opacity: 0;
   }
+}
+
+@keyframes artwork-leave-right {
+  to {
+    transform: translateX(5%) scale(1.09);
+    filter: blur(10px);
+    opacity: 0;
+  }
+}
+
+@keyframes artwork-arrive-from-left {
+  from {
+    transform: translateX(-5%) scale(0.93);
+    filter: blur(10px);
+    opacity: 0;
+  }
+}
+
+/* ---- The wall label ---- */
+
+/* The card is only a background, so it stretches to its new height. */
+::view-transition-old(artwork-label),
+::view-transition-new(artwork-label) {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+/* A row glides to its new place; its heading does not blink. */
+::view-transition-old(.artwork-row) {
+  animation: none;
+  opacity: 0;
+}
+
+::view-transition-new(.artwork-row) {
+  animation: none;
+}
+
+/* Words slide, and are never stretched. */
+::view-transition-old(.artwork-words),
+::view-transition-new(.artwork-words) {
+  width: 100%;
+  height: auto;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(.artwork-words) {
+  animation-name: words-leave-left;
+}
+
+::view-transition-new(.artwork-words) {
+  animation-name: words-arrive-from-right;
+}
+
+:root[data-travel='back']::view-transition-old(.artwork-words) {
+  animation-name: words-leave-right;
+}
+
+:root[data-travel='back']::view-transition-new(.artwork-words) {
+  animation-name: words-arrive-from-left;
+}
+
+@keyframes words-leave-left {
+  to {
+    transform: translateX(-2.4rem);
+    opacity: 0;
+  }
+}
+
+@keyframes words-arrive-from-right {
+  from {
+    transform: translateX(2.4rem);
+    opacity: 0;
+  }
+}
+
+@keyframes words-leave-right {
+  to {
+    transform: translateX(2.4rem);
+    opacity: 0;
+  }
+}
+
+@keyframes words-arrive-from-left {
+  from {
+    transform: translateX(-2.4rem);
+    opacity: 0;
+  }
+}
+
+/* The position keeps its own width, against the right edge. */
+::view-transition-old(artwork-position),
+::view-transition-new(artwork-position) {
+  width: auto;
+  right: 0;
+  left: auto;
+}
+
+/* Each row follows a beat after the one above it. */
+::view-transition-old(artwork-value-date) {
+  animation-delay: calc(var(--artwork-step) * 0.05);
+}
+
+::view-transition-old(artwork-value-medium) {
+  animation-delay: calc(var(--artwork-step) * 0.1);
+}
+
+::view-transition-old(artwork-value-department) {
+  animation-delay: calc(var(--artwork-step) * 0.15);
+}
+
+::view-transition-old(artwork-value-type) {
+  animation-delay: calc(var(--artwork-step) * 0.2);
+}
+
+::view-transition-old(artwork-value-origin) {
+  animation-delay: calc(var(--artwork-step) * 0.25);
+}
+
+::view-transition-old(artwork-value-style) {
+  animation-delay: calc(var(--artwork-step) * 0.3);
+}
+
+::view-transition-new(artwork-title) {
+  animation-delay: calc(var(--artwork-step) * 0.2);
+}
+
+::view-transition-new(artwork-value-artist) {
+  animation-delay: calc(var(--artwork-step) * 0.3);
+}
+
+::view-transition-new(artwork-value-date) {
+  animation-delay: calc(var(--artwork-step) * 0.38);
+}
+
+::view-transition-new(artwork-value-medium) {
+  animation-delay: calc(var(--artwork-step) * 0.46);
+}
+
+::view-transition-new(artwork-value-department) {
+  animation-delay: calc(var(--artwork-step) * 0.54);
+}
+
+::view-transition-new(artwork-value-type) {
+  animation-delay: calc(var(--artwork-step) * 0.62);
+}
+
+::view-transition-new(artwork-value-origin) {
+  animation-delay: calc(var(--artwork-step) * 0.7);
+}
+
+::view-transition-new(artwork-value-style) {
+  animation-delay: calc(var(--artwork-step) * 0.78);
+}
+
+/* A value that starts late must wait unseen, and one that ends early must
+   stay gone. */
+::view-transition-old(.artwork-words),
+::view-transition-new(.artwork-words) {
+  animation-fill-mode: both;
 }
 
 /* Visitors who ask for less motion get a short, plain dissolve. */
@@ -64,13 +243,20 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation-duration: 120ms;
+    animation-delay: 0s;
   }
 
-  ::view-transition-old(artwork) {
+  ::view-transition-old(artwork),
+  ::view-transition-old(.artwork-words),
+  :root[data-travel='back']::view-transition-old(artwork),
+  :root[data-travel='back']::view-transition-old(.artwork-words) {
     animation-name: artwork-fade-out;
   }
 
-  ::view-transition-new(artwork) {
+  ::view-transition-new(artwork),
+  ::view-transition-new(.artwork-words),
+  :root[data-travel='back']::view-transition-new(artwork),
+  :root[data-travel='back']::view-transition-new(.artwork-words) {
     animation-name: artwork-fade-in;
   }
 }

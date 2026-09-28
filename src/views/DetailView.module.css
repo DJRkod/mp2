@@ -17,6 +17,7 @@
 
 .position {
   view-transition-name: artwork-position;
+  view-transition-class: artwork-words;
   color: var(--muted);
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
@@ -63,6 +64,8 @@
 }
 
 .label h1 {
+  view-transition-name: artwork-title;
+  view-transition-class: artwork-words;
   margin-bottom: var(--space-4);
   font-size: var(--text-xl);
   overflow-wrap: anywhere;
@@ -74,6 +77,7 @@
 }
 
 .fact {
+  view-transition-class: artwork-row;
   display: grid;
   grid-template-columns: 8.5rem minmax(0, 1fr);
   gap: var(--space-3);
@@ -91,8 +95,67 @@
 }
 
 .fact dd {
+  view-transition-class: artwork-words;
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+/* Each row and each value has a name of its own, so that between two
+   artworks a row glides to its new place while its value slides. */
+.artist {
+  view-transition-name: artwork-row-artist;
+}
+
+.artist dd {
+  view-transition-name: artwork-value-artist;
+}
+
+.date {
+  view-transition-name: artwork-row-date;
+}
+
+.date dd {
+  view-transition-name: artwork-value-date;
+}
+
+.medium {
+  view-transition-name: artwork-row-medium;
+}
+
+.medium dd {
+  view-transition-name: artwork-value-medium;
+}
+
+.department {
+  view-transition-name: artwork-row-department;
+}
+
+.department dd {
+  view-transition-name: artwork-value-department;
+}
+
+.type {
+  view-transition-name: artwork-row-type;
+}
+
+.type dd {
+  view-transition-name: artwork-value-type;
+}
+
+.origin {
+  view-transition-name: artwork-row-origin;
+}
+
+.origin dd {
+  view-transition-name: artwork-value-origin;
+}
+
+.style {
+  view-transition-name: artwork-row-style;
+}
+
+.style dd {
+  view-transition-name: artwork-value-style;
 }
 
 .walk {

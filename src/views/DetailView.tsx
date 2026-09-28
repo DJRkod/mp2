@@ -6,12 +6,22 @@ import type { TrailEntry } from '../browse/trail'
 import { useCollection } from '../collection/CollectionContext'
 import { ArtworkImage } from '../components/ArtworkImage'
 import { preloadImage, withViewTransition } from '../components/artworkTransition'
+import type { Travel } from '../components/artworkTransition'
 import { Filmstrip } from '../components/Filmstrip'
 import { StatusMessage } from '../components/StatusMessage'
 import { usePageTitle } from '../components/usePageTitle'
 import type { Artwork } from '../types/artwork'
 import styles from './DetailView.module.css'
 import { orUnknown } from './format'
+
+type FactKey =
+  | 'artist'
+  | 'date'
+  | 'medium'
+  | 'department'
+  | 'type'
+  | 'origin'
+  | 'style'
 
 type Fetched =
   | { id: number; status: 'found'; work: Artwork }
@@ -95,13 +105,13 @@ export function DetailView() {
   )
 
   const stepTo = useCallback(
-    async (entry: TrailEntry) => {
+    async (entry: TrailEntry, travel: Travel) => {
       const step = ++latestStep.current
       heading.current = entry
       // Wait for the picture, so the change never shows an empty frame.
       await preloadImage(entry.imageId)
       if (step !== latestStep.current) return
-      withViewTransition(() => goTo(`/artwork/${entry.id}`))
+      withViewTransition(() => goTo(`/artwork/${entry.id}`), travel)
     },
     [goTo],
   )
@@ -124,18 +134,23 @@ export function DetailView() {
       const from = heading.current
         ? navigateTrail(trail, heading.current)
         : { previous, next }
-      void stepTo(event.key === 'ArrowLeft' ? from.previous : from.next)
+      if (event.key === 'ArrowLeft') void stepTo(from.previous, 'back')
+      else void stepTo(from.next, 'forward')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [navigation, stepTo])
 
-  function onStep(event: MouseEvent<HTMLAnchorElement>, entry: TrailEntry) {
+  function onStep(
+    event: MouseEvent<HTMLAnchorElement>,
+    entry: TrailEntry,
+    travel: Travel,
+  ) {
     // Clicks that open a new tab or window are left to the browser.
     if (event.button !== 0) return
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
     event.preventDefault()
-    void stepTo(entry)
+    void stepTo(entry, travel)
   }
 
   usePageTitle(work ? orUnknown(work.title, 'Untitled') : 'Artwork')
@@ -170,14 +185,15 @@ export function DetailView() {
     return <StatusMessage kind="loading">Loading the artwork…</StatusMessage>
   }
 
-  const facts: [string, string | null][] = [
-    ['Artist', work.artist],
-    ['Date', work.dateDisplay],
-    ['Medium', work.medium],
-    ['Department', work.department],
-    ['Type', work.artworkType],
-    ['Place of origin', work.placeOfOrigin],
-    ['Style', work.style],
+  // The key names the row in the styles, so each can move on its own.
+  const facts: [FactKey, string, string | null][] = [
+    ['artist', 'Artist', work.artist],
+    ['date', 'Date', work.dateDisplay],
+    ['medium', 'Medium', work.medium],
+    ['department', 'Department', work.department],
+    ['type', 'Type', work.artworkType],
+    ['origin', 'Place of origin', work.placeOfOrigin],
+    ['style', 'Style', work.style],
   ]
 
   return (
@@ -211,8 +227,8 @@ export function DetailView() {
         <div className={styles.label}>
           <h1 id="artwork-title">{orUnknown(work.title, 'Untitled')}</h1>
           <dl className={styles.facts}>
-            {facts.map(([name, value]) => (
-              <div key={name} className={styles.fact}>
+            {facts.map(([key, name, value]) => (
+              <div key={key} className={`${styles.fact} ${styles[key]}`}>
                 <dt>{name}</dt>
                 <dd>{orUnknown(value)}</dd>
               </div>
@@ -227,7 +243,7 @@ export function DetailView() {
             className={styles.step}
             to={`/artwork/${navigation.previous.id}`}
             rel="prev"
-            onClick={(event) => onStep(event, navigation.previous)}
+            onClick={(event) => onStep(event, navigation.previous, 'back')}
           >
             <span aria-hidden="true">←</span> Previous
           </Link>
@@ -240,7 +256,7 @@ export function DetailView() {
             className={styles.step}
             to={`/artwork/${navigation.next.id}`}
             rel="next"
-            onClick={(event) => onStep(event, navigation.next)}
+            onClick={(event) => onStep(event, navigation.next, 'forward')}
           >
             Next <span aria-hidden="true">→</span>
           </Link>

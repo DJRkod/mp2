@@ -18,6 +18,7 @@ function stubDecode(decode: Decode) {
 afterEach(() => {
   delete imagePrototype.decode
   delete (document as { startViewTransition?: unknown }).startViewTransition
+  delete document.documentElement.dataset.travel
   vi.useRealTimers()
 })
 
@@ -70,7 +71,7 @@ describe('withViewTransition', () => {
       update()
     })
     ;(document as { startViewTransition?: unknown }).startViewTransition = start
-    withViewTransition(() => order.push('change'))
+    withViewTransition(() => order.push('change'), 'forward')
     expect(order).toEqual(['transition', 'change'])
   })
 
@@ -83,7 +84,7 @@ describe('withViewTransition', () => {
       return { ready: skipped(), finished: skipped(), updateCallbackDone: Promise.resolve() }
     }
     const change = vi.fn()
-    withViewTransition(change)
+    withViewTransition(change, 'forward')
     await new Promise((resolve) => setTimeout(resolve, 20))
     runner.off('unhandledRejection', unhandled)
     expect(change).toHaveBeenCalledTimes(1)
@@ -92,7 +93,14 @@ describe('withViewTransition', () => {
 
   it('makes the change directly when the browser has none', () => {
     const change = vi.fn()
-    withViewTransition(change)
+    withViewTransition(change, 'back')
     expect(change).toHaveBeenCalledTimes(1)
+  })
+
+  it('writes the direction of travel on the page before the change', () => {
+    const seen: (string | undefined)[] = []
+    withViewTransition(() => seen.push(document.documentElement.dataset.travel), 'back')
+    withViewTransition(() => seen.push(document.documentElement.dataset.travel), 'forward')
+    expect(seen).toEqual(['back', 'forward'])
   })
 })
