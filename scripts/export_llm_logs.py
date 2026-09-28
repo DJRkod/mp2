@@ -38,6 +38,21 @@ DEFAULT_CAP = 5000
 REDACT_FILE = REPO_ROOT / ".llm_log_redact.txt"
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+")
 PUBLIC_EMAILS = {"uiuc.web.programming@gmail.com", "noreply@anthropic.com", "git@github.com"}
+# Credentials a command might print. A false match only replaces text in a log,
+# so these lean towards matching.
+SECRET = re.compile("|".join([
+    r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----",
+    r"\bgh[pousr]_[A-Za-z0-9]{20,}",
+    r"\bgithub_pat_[A-Za-z0-9_]{20,}",
+    r"\bsk-ant-[A-Za-z0-9_-]{10,}",
+    r"\bsk-[A-Za-z0-9]{32,}",
+    r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b",
+    r"\bxox[abprs]-[A-Za-z0-9-]{10,}",
+    r"\bnpm_[A-Za-z0-9]{30,}",
+    r"\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}",
+]), re.DOTALL)
+# user:password@host in a URL; the scheme and host are kept.
+URL_CREDENTIALS = re.compile(r"(?<=://)[^\s/:@]+:[^\s/@]+(?=@)")
 
 csv.field_size_limit(2**31 - 1)
 
@@ -152,10 +167,19 @@ def build_redactor():
     terms = [line.strip() for line in REDACT_FILE.read_text(encoding="utf-8-sig").splitlines()]
     literal = None
     if any(terms):
-        ordered = sorted((t for t in terms if t), key=len, reverse=True)
+        # Tool calls are logged as JSON, where quotes and backslashes are
+        # escaped, so each term is matched in that form as well.
+        forms = set()
+        for term in filter(None, terms):
+            forms.add(term)
+            forms.add(json.dumps(term, ensure_ascii=False)[1:-1])
+        ordered = sorted(forms, key=len, reverse=True)
         literal = re.compile("|".join(re.escape(t) for t in ordered), re.IGNORECASE)
 
     def redact(text):
+        # Before emails: the password half of user:password@host looks like one.
+        text = URL_CREDENTIALS.sub("[redacted-secret]", text)
+        text = SECRET.sub("[redacted-secret]", text)
         text = EMAIL.sub(
             lambda m: m.group(0) if m.group(0).lower() in PUBLIC_EMAILS else "[redacted-email]", text)
         return literal.sub("[redacted]", text) if literal else text

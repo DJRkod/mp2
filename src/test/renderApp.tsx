@@ -39,7 +39,7 @@ export function renderApp(route: string, options: Options) {
   }
 
   const view = render(
-    <MemoryRouter initialEntries={[route]}>
+    <MemoryRouter initialEntries={[route]} useTransitions={false}>
       <CollectionProvider
         client={client}
         departments={TEST_DEPARTMENTS}

@@ -24,6 +24,8 @@ interface Props {
   client?: Pick<ArticClient, 'loadDepartment' | 'searchMuseum' | 'fetchArtwork'>
   departments?: string[]
   loadSnapshot?: () => Promise<Artwork[]>
+  /** Loads the starter collection; replaced in tests. */
+  load?: typeof loadStarter
 }
 
 export function CollectionProvider({
@@ -31,6 +33,7 @@ export function CollectionProvider({
   client = artic,
   departments = DEPARTMENTS,
   loadSnapshot = loadBundledSnapshot,
+  load = loadStarter,
 }: Props) {
   const [state, dispatch] = useReducer(collectionReducer, initialState)
   const started = useRef(false)
@@ -39,23 +42,25 @@ export function CollectionProvider({
     // StrictMode runs effects twice in development; load only once.
     if (started.current) return
     started.current = true
-    loadStarter({
+    load({
       loadDepartment: client.loadDepartment,
       loadSnapshot,
       departments,
       now: Date.now(),
     }).then(
       (result) => dispatch({ type: 'starterLoaded', ...result }),
-      // Whatever went wrong, leave the loading state and say so.
+      // The loader handles the failures it knows about. This is the last
+      // resort for one it does not, so the app never stays on "loading".
       () =>
         dispatch({
           type: 'starterLoaded',
           works: [],
           source: 'snapshot',
           notice: LOAD_FAILED,
+          noticeKind: 'error',
         }),
     )
-  }, [client, departments, loadSnapshot])
+  }, [client, departments, loadSnapshot, load])
 
   const searchMuseum = useCallback(
     async (query: string) => {

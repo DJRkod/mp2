@@ -47,7 +47,9 @@ export function Layout() {
       </header>
 
       <main id="main" className={styles.main}>
-        {state.notice && <StatusMessage kind="info">{state.notice}</StatusMessage>}
+        {state.notice && (
+          <StatusMessage kind={state.noticeKind}>{state.notice}</StatusMessage>
+        )}
         <Outlet />
       </main>
 

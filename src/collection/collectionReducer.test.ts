@@ -16,6 +16,7 @@ function loaded(count: number) {
     works,
     source: 'live',
     notice: null,
+    noticeKind: 'info',
   })
 }
 

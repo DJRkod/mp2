@@ -57,7 +57,10 @@ describe('loadStarter', () => {
     const result = await run()
     expect(ids(result.works)).toEqual([1, 102])
     expect(result.source).toBe('mixed')
-    expect(result.notice).toMatch(/Textiles/)
+    expect(result.notice).toBe(
+      'Some rooms are showing a saved copy because they could not be loaded: Textiles.',
+    )
+    expect(result.noticeKind).toBe('info')
     expect(readCache(NOW)).toBeNull()
   })
 
@@ -93,6 +96,25 @@ describe('loadStarter', () => {
     })
     expect(ids(result.works)).toEqual([1])
     expect(result.source).toBe('mixed')
+    expect(result.notice).toBe('Some rooms could not be loaded and are missing: Textiles.')
+    expect(result.noticeKind).toBe('error')
+  })
+
+  it('names saved and missing rooms separately', async () => {
+    const result = await loadStarter({
+      loadDepartment: async () => {
+        throw new ApiError('down')
+      },
+      loadSnapshot: async () => [snapshot[0]],
+      departments: DEPARTMENTS,
+      now: NOW,
+    })
+    expect(ids(result.works)).toEqual([101])
+    expect(result.notice).toBe(
+      'Some rooms are showing a saved copy because they could not be loaded: Arts of Asia. ' +
+        'Some rooms could not be loaded and are missing: Textiles.',
+    )
+    expect(result.noticeKind).toBe('error')
   })
 
   it('reports a failed load when the API and the snapshot both fail', async () => {
@@ -108,6 +130,7 @@ describe('loadStarter', () => {
     })
     expect(result.works).toEqual([])
     expect(result.notice).toBe(LOAD_FAILED)
+    expect(result.noticeKind).toBe('error')
     expect(readCache(NOW)).toBeNull()
   })
 

@@ -18,6 +18,7 @@ export interface CollectionState {
   source: StarterSource | null
   /** A non-blocking message about how the starter collection loaded. */
   notice: string | null
+  noticeKind: 'info' | 'error'
   /** Fixed for the session once the starter collection has loaded. */
   typeOptions: string[]
   search: SearchState
@@ -29,6 +30,7 @@ export type CollectionAction =
       works: Artwork[]
       source: StarterSource
       notice: string | null
+      noticeKind: 'info' | 'error'
     }
   | { type: 'searchStarted'; query: string }
   | { type: 'searchSucceeded'; query: string; works: Artwork[] }
@@ -42,6 +44,7 @@ export const initialState: CollectionState = {
   starterOrder: [],
   source: null,
   notice: null,
+  noticeKind: 'info',
   typeOptions: [],
   search: { status: 'idle' },
 }
@@ -66,6 +69,7 @@ export function collectionReducer(
         starterOrder: order,
         source: action.source,
         notice: action.notice,
+        noticeKind: action.noticeKind,
         typeOptions: typesOf(action.works),
       }
     }

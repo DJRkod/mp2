@@ -41,13 +41,14 @@ export function ListView() {
   const sort = oneOf(params.get('sort'), SORT_KEYS, 'title')
   const direction = oneOf(params.get('dir'), SORT_DIRECTIONS, 'asc')
 
-  // The box keeps its own text so typing is never a step behind the address,
-  // and follows the address when it changes from outside (back and forward).
+  // The box keeps its own text and copies it to the address. It takes the
+  // address's text only when the address itself changes (back, forward, a
+  // link), never because the box got ahead of it.
   const [query, setQuery] = useState(urlQuery)
-  const [syncedQuery, setSyncedQuery] = useState(urlQuery)
-  if (urlQuery !== syncedQuery) {
-    setSyncedQuery(urlQuery)
-    setQuery(urlQuery)
+  const [seenUrlQuery, setSeenUrlQuery] = useState(urlQuery)
+  if (urlQuery !== seenUrlQuery) {
+    setSeenUrlQuery(urlQuery)
+    if (urlQuery !== query) setQuery(urlQuery)
   }
 
   const searchText = query.trim()
@@ -79,9 +80,8 @@ export function ListView() {
     saveTrail(makeTrail(visible, location.pathname + location.search))
   }
 
-  function type(value: string) {
+  function changeSearch(value: string) {
     setQuery(value)
-    setSyncedQuery(value)
     update('q', value, '')
   }
 
@@ -104,7 +104,7 @@ export function ListView() {
             value={query}
             placeholder="Try “Monet” or “rain”"
             autoComplete="off"
-            onChange={(event) => type(event.target.value)}
+            onChange={(event) => changeSearch(event.target.value)}
           />
         </label>
 
@@ -184,7 +184,9 @@ export function ListView() {
 
           {visible.length === 0 ? (
             <StatusMessage kind="empty">
-              No artworks in the collection match “{searchText}”.
+              {searchText
+                ? `No artworks in the collection match “${searchText}”.`
+                : 'There are no artworks to show.'}
             </StatusMessage>
           ) : (
             <ol className={styles.rows}>

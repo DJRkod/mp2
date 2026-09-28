@@ -88,13 +88,28 @@ describe('DetailView', () => {
     await title('Second')
   })
 
-  it('ignores arrow keys while typing in a field and while a key is held', async () => {
+  it('ignores a held arrow key and one pressed with a modifier', async () => {
     saveTrail(makeTrail(works.slice(0, 5), '/'))
     renderApp('/artwork/3', { works })
     await title('Third')
     fireEvent.keyDown(window, { key: 'ArrowRight', repeat: true })
     fireEvent.keyDown(window, { key: 'ArrowRight', ctrlKey: true })
     expect(screen.getByTestId('address')).toHaveTextContent('/artwork/3')
+  })
+
+  it('ignores arrow keys pressed while typing in a field', async () => {
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+    for (const tag of ['input', 'textarea', 'select']) {
+      const field = document.body.appendChild(document.createElement(tag))
+      field.focus()
+      fireEvent.keyDown(field, { key: 'ArrowRight' })
+      field.remove()
+    }
+    expect(screen.getByTestId('address')).toHaveTextContent('/artwork/3')
+    fireEvent.keyDown(document.body, { key: 'ArrowRight' })
+    await title('Fourth')
   })
 
   it('shows two neighbours on each side and opens one, keeping the trail', async () => {

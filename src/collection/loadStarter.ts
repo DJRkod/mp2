@@ -2,10 +2,13 @@ import type { Artwork } from '../types/artwork'
 import { readCache, writeCache } from './cache'
 import type { StarterSource } from './collectionReducer'
 
+export type NoticeKind = 'info' | 'error'
+
 export interface StarterResult {
   works: Artwork[]
   source: StarterSource
   notice: string | null
+  noticeKind: NoticeKind
 }
 
 interface Options {
@@ -35,7 +38,9 @@ export async function loadStarter({
   now,
 }: Options): Promise<StarterResult> {
   const cached = readCache(now)
-  if (cached) return { works: cached, source: 'cache', notice: null }
+  if (cached) {
+    return { works: cached, source: 'cache', notice: null, noticeKind: 'info' }
+  }
 
   const settled = await Promise.allSettled(departments.map(loadDepartment))
   const rooms = settled.map((result) =>
@@ -46,7 +51,7 @@ export async function loadStarter({
   if (missing.length === 0) {
     const works = unique(rooms.flat())
     writeCache(works, now)
-    return { works, source: 'live', notice: null }
+    return { works, source: 'live', notice: null, noticeKind: 'info' }
   }
 
   // The snapshot is a separate download, so it can fail too.
@@ -59,19 +64,38 @@ export async function loadStarter({
   const works = unique(filled.flat())
 
   if (works.length === 0) {
-    return { works, source: 'snapshot', notice: LOAD_FAILED }
+    return { works, source: 'snapshot', notice: LOAD_FAILED, noticeKind: 'error' }
   }
-  if (missing.length === departments.length) {
+
+  const source = missing.length === departments.length ? 'snapshot' : 'mixed'
+  const stillEmpty = departments.filter((_, index) => filled[index].length === 0)
+  const saved = missing.filter((department) => !stillEmpty.includes(department))
+
+  if (source === 'snapshot' && stillEmpty.length === 0) {
     return {
       works,
-      source: 'snapshot',
+      source,
       notice:
         'The Art Institute API could not be reached, so this is a saved copy of the collection.',
+      noticeKind: 'info',
     }
+  }
+
+  const sentences = []
+  if (saved.length > 0) {
+    sentences.push(
+      `Some rooms are showing a saved copy because they could not be loaded: ${saved.join(', ')}.`,
+    )
+  }
+  if (stillEmpty.length > 0) {
+    sentences.push(
+      `Some rooms could not be loaded and are missing: ${stillEmpty.join(', ')}.`,
+    )
   }
   return {
     works,
-    source: 'mixed',
-    notice: `Some rooms are showing a saved copy because they could not be loaded: ${missing.join(', ')}.`,
+    source,
+    notice: sentences.join(' '),
+    noticeKind: stillEmpty.length > 0 ? 'error' : 'info',
   }
 }

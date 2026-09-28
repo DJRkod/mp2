@@ -132,9 +132,24 @@ describe('ListView', () => {
     renderApp('/?q=rain', { works })
     await ready()
     const box = screen.getByRole('searchbox', { name: 'Search' })
-    await user.type(box, 'T', { initialSelectionStart: 0, initialSelectionEnd: 0 })
-    expect(box).toHaveValue('Train')
-    expect(screen.getByTestId('address')).toHaveTextContent('/?q=Train')
+    await user.type(box, 'Th', { initialSelectionStart: 0, initialSelectionEnd: 0 })
+    expect(box).toHaveValue('Thrain')
+    expect(screen.getByTestId('address')).toHaveTextContent('/?q=Thrain')
+  })
+
+  it('follows the address when it changes from outside', async () => {
+    const user = userEvent.setup()
+    renderApp('/?q=rain', { works })
+    await ready()
+    await user.click(screen.getByRole('link', { name: 'List' }))
+    expect(screen.getByRole('searchbox', { name: 'Search' })).toHaveValue('')
+    expect(rowLinks()).toHaveLength(4)
+  })
+
+  it('says there is nothing to show when the collection is empty', async () => {
+    renderApp('/', { works: [] })
+    expect(await screen.findByText('There are no artworks to show.')).toBeVisible()
+    expect(screen.queryByText(/match “”/)).toBeNull()
   })
 
   it('shows an error and keeps the rows when the full-museum search fails (AE5)', async () => {

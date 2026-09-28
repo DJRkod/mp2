@@ -92,8 +92,55 @@ describe('starter collection', () => {
         </CollectionProvider>
       </MemoryRouter>,
     )
-    expect(await screen.findByText(/The collection could not be loaded/)).toBeVisible()
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /The collection could not be loaded/,
+    )
     expect(screen.queryByText('Loading the collection…')).toBeNull()
+  })
+
+  it('shows a saved-copy notice as a status, not an alert', async () => {
+    render(
+      <MemoryRouter>
+        <CollectionProvider
+          client={{
+            loadDepartment: async () => {
+              throw new Error('down')
+            },
+            searchMuseum: async () => [],
+            fetchArtwork: async () => null,
+          }}
+          departments={TEST_DEPARTMENTS}
+          loadSnapshot={async () => [...works, work({ id: 3, department: 'Modern Art' })]}
+        >
+          <App />
+        </CollectionProvider>
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText(/this is a saved copy/)).toBeVisible()
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('leaves the loading state even when the loader itself fails', async () => {
+    render(
+      <MemoryRouter>
+        <CollectionProvider
+          client={{
+            loadDepartment: async () => [],
+            searchMuseum: async () => [],
+            fetchArtwork: async () => null,
+          }}
+          departments={TEST_DEPARTMENTS}
+          load={async () => {
+            throw new Error('unexpected')
+          }}
+        >
+          <App />
+        </CollectionProvider>
+      </MemoryRouter>,
+    )
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /The collection could not be loaded/,
+    )
   })
 })
 
