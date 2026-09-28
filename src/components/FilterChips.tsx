@@ -16,6 +16,8 @@ export function FilterChips({ legend, options, selected, onToggle }: Props) {
           <span className={styles.count}> · {selected.join(', ')}</span>
         )}
       </legend>
+      {/* Shown only at widths where the row scrolls. */}
+      <p className={styles.hint}>Scroll sideways for more</p>
       <ul className={styles.chips}>
         {options.map((option) => {
           const on = selected.includes(option)

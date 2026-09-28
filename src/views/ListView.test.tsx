@@ -86,10 +86,34 @@ describe('ListView', () => {
     expect(loadTrail()?.returnTo).toBe('/?q=rain&sort=year')
   })
 
+  it('explains that works still in copyright are not here when nothing matches', async () => {
+    renderApp('/?q=picasso', { works })
+    await ready()
+    expect(
+      screen.getByText(/only works in the public domain.*still in copyright.*are not shown/),
+    ).toBeVisible()
+  })
+
+  it('explains it again when the full museum finds nothing either', async () => {
+    const user = userEvent.setup()
+    renderApp('/?q=picasso', { works, museum: [] })
+    await ready()
+    await user.click(screen.getByRole('button', { name: /Search the full museum/ }))
+    expect(
+      await screen.findByText(/The full museum has no public-domain works with pictures matching “picasso”/),
+    ).toBeVisible()
+  })
+
+  it('does not explain copyright when there are results', async () => {
+    renderApp('/?q=rain', { works })
+    await ready()
+    expect(screen.queryByText(/still in copyright/)).toBeNull()
+  })
+
   it('shows an empty message and the full-museum button when nothing matches', async () => {
     renderApp('/?q=zzzz', { works })
     await ready()
-    expect(screen.getByText('No artworks in the collection match “zzzz”.')).toBeVisible()
+    expect(screen.getByText(/No artworks in the collection match “zzzz”\./)).toBeVisible()
     expect(screen.getByRole('button', { name: 'Search the full museum for “zzzz”' })).toBeVisible()
   })
 

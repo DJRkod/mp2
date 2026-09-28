@@ -177,16 +177,25 @@ export function ListView() {
           {searchIsCurrent && search.status === 'done' && (
             <StatusMessage kind="info">
               {search.found === 0
-                ? 'The full museum has no public-domain works matching that search.'
+                ? `The full museum has no public-domain works with pictures matching “${searchText}”.`
                 : `The full museum returned ${search.found} of its best matches; ${search.added} were new and have been added.`}
             </StatusMessage>
           )}
 
           {visible.length === 0 ? (
             <StatusMessage kind="empty">
-              {searchText
-                ? `No artworks in the collection match “${searchText}”.`
-                : 'There are no artworks to show.'}
+              {searchText ? (
+                <>
+                  <p>No artworks in the collection match “{searchText}”.</p>
+                  <p>
+                    This site shows only works in the public domain. Works
+                    still in copyright, which includes much of the art of the
+                    last hundred years, are not shown.
+                  </p>
+                </>
+              ) : (
+                'There are no artworks to show.'
+              )}
             </StatusMessage>
           ) : (
             <ol className={styles.rows}>

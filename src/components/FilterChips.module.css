@@ -21,6 +21,13 @@
   text-transform: none;
 }
 
+.hint {
+  display: none;
+  margin-bottom: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -52,11 +59,17 @@
 /* On a phone each group is one row that scrolls sideways, so the rooms stay
    within reach. */
 @media (max-width: 40rem) {
+  .hint {
+    display: block;
+  }
+
   .chips {
     flex-wrap: nowrap;
     overflow-x: auto;
     padding: 3px 3px var(--space-2);
     scrollbar-width: thin;
+    /* The row fades at its right edge, where more chips wait. */
+    mask-image: linear-gradient(to right, #000 85%, transparent);
   }
 
   .chips > li {

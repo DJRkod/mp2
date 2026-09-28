@@ -116,41 +116,56 @@ export function DetailView() {
     [goTo],
   )
 
+  /** One step along the trail, by key or by button. */
+  const stepBy = useCallback(
+    (travel: Travel) => {
+      if (!navigation) return
+      // A step made while a picture loads carries on from where the last one
+      // was heading, so that none is lost.
+      const from = heading.current
+        ? navigateTrail(navigation.trail, heading.current)
+        : navigation
+      void stepTo(travel === 'back' ? from.previous : from.next, travel)
+    },
+    [navigation, stepTo],
+  )
+
   useEffect(() => {
     if (!navigation) return
-    const { trail, previous, next } = navigation
     // Have the neighbours' pictures ready before they are asked for.
-    void preloadImage(previous.imageId)
-    void preloadImage(next.imageId)
+    void preloadImage(navigation.previous.imageId)
+    void preloadImage(navigation.next.imageId)
 
     function onKey(event: KeyboardEvent) {
       // A held key repeats; one press is one step.
       if (event.repeat) return
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (isTyping(event.target)) return
-      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
-      // Presses made while a picture loads carry on from where the last one
-      // was heading, so none is lost.
-      const from = heading.current
-        ? navigateTrail(trail, heading.current)
-        : { previous, next }
-      if (event.key === 'ArrowLeft') void stepTo(from.previous, 'back')
-      else void stepTo(from.next, 'forward')
+      if (event.key === 'ArrowLeft') stepBy('back')
+      if (event.key === 'ArrowRight') stepBy('forward')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [navigation, stepTo])
+  }, [navigation, stepBy])
 
-  function onStep(
+  /** True for a plain click; one that opens a new tab is left to the browser. */
+  function takesOver(event: MouseEvent<HTMLAnchorElement>): boolean {
+    if (event.button !== 0) return false
+    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return false
+    event.preventDefault()
+    return true
+  }
+
+  function onStep(event: MouseEvent<HTMLAnchorElement>, travel: Travel) {
+    if (takesOver(event)) stepBy(travel)
+  }
+
+  function onJump(
     event: MouseEvent<HTMLAnchorElement>,
     entry: TrailEntry,
     travel: Travel,
   ) {
-    // Clicks that open a new tab or window are left to the browser.
-    if (event.button !== 0) return
-    if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
-    event.preventDefault()
-    void stepTo(entry, travel)
+    if (takesOver(event)) void stepTo(entry, travel)
   }
 
   usePageTitle(work ? orUnknown(work.title, 'Untitled') : 'Artwork')
@@ -243,20 +258,20 @@ export function DetailView() {
             className={styles.step}
             to={`/artwork/${navigation.previous.id}`}
             rel="prev"
-            onClick={(event) => onStep(event, navigation.previous, 'back')}
+            onClick={(event) => onStep(event, 'back')}
           >
             <span aria-hidden="true">←</span> Previous
           </Link>
           <Filmstrip
             strip={navigation.strip}
             currentId={work.id}
-            onStep={onStep}
+            onStep={onJump}
           />
           <Link
             className={styles.step}
             to={`/artwork/${navigation.next.id}`}
             rel="next"
-            onClick={(event) => onStep(event, navigation.next, 'forward')}
+            onClick={(event) => onStep(event, 'forward')}
           >
             Next <span aria-hidden="true">→</span>
           </Link>

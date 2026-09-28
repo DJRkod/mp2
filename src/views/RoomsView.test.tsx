@@ -49,6 +49,12 @@ describe('RoomsView', () => {
     ])
   })
 
+  it('says that each row of filters scrolls sideways', async () => {
+    renderApp('/rooms', { works })
+    await ready()
+    expect(screen.getAllByText('Scroll sideways for more')).toHaveLength(2)
+  })
+
   it('shows works of either type when two types are selected', async () => {
     const user = userEvent.setup()
     renderApp('/rooms', { works })

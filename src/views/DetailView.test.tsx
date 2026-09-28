@@ -173,6 +173,41 @@ describe('moving between artworks', () => {
     await title('Fourth')
   })
 
+  it('counts every click when Next is clicked faster than pictures load', async () => {
+    const user = userEvent.setup()
+    const ready: (() => void)[] = []
+    imagePrototype.decode = () => new Promise((resolve) => ready.push(resolve))
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/1', { works })
+    await title('The Bedroom')
+    const before = ready.length
+
+    const next = screen.getByRole('link', { name: /Next/ })
+    await user.click(next)
+    await user.click(next)
+    await user.click(next)
+    expect(screen.getByTestId('address')).toHaveTextContent('/artwork/1')
+    ready.slice(before).forEach((resolve) => resolve())
+    await title('Fourth')
+  })
+
+  it('counts clicks on Previous and Next against each other', async () => {
+    const user = userEvent.setup()
+    const ready: (() => void)[] = []
+    imagePrototype.decode = () => new Promise((resolve) => ready.push(resolve))
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+
+    await user.click(screen.getByRole('link', { name: /Next/ }))
+    await user.click(screen.getByRole('link', { name: /Next/ }))
+    await user.click(screen.getByRole('link', { name: /Previous/ }))
+    expect(screen.getByTestId('address')).toHaveTextContent('/artwork/3')
+    // The neighbours' pictures were asked for when the page opened.
+    ready.forEach((resolve) => resolve())
+    await title('Fourth')
+  })
+
   it('leaves a click with a modifier key to the browser', async () => {
     const start = vi.fn((update: () => void) => update())
     transitions.startViewTransition = start
