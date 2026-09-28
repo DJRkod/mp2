@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/artic'
 import { ids, work } from '../test/fixtures'
 import { readCache, writeCache } from './cache'
-import { loadStarter } from './loadStarter'
+import { LOAD_FAILED, loadStarter } from './loadStarter'
 
 const NOW = Date.UTC(2026, 8, 28, 12)
 const DEPARTMENTS = ['Arts of Asia', 'Textiles']
@@ -76,6 +76,38 @@ describe('loadStarter', () => {
     expect(ids(result.works)).toEqual([101, 102])
     expect(result.source).toBe('snapshot')
     expect(result.notice).toMatch(/saved copy/i)
+    expect(readCache(NOW)).toBeNull()
+  })
+
+  it('keeps the rooms that loaded when the snapshot cannot be loaded', async () => {
+    const result = await loadStarter({
+      loadDepartment: async (d) => {
+        if (d === 'Textiles') throw new ApiError('down')
+        return live[d as keyof typeof live]
+      },
+      loadSnapshot: async () => {
+        throw new Error('chunk failed to load')
+      },
+      departments: DEPARTMENTS,
+      now: NOW,
+    })
+    expect(ids(result.works)).toEqual([1])
+    expect(result.source).toBe('mixed')
+  })
+
+  it('reports a failed load when the API and the snapshot both fail', async () => {
+    const result = await loadStarter({
+      loadDepartment: async () => {
+        throw new ApiError('down')
+      },
+      loadSnapshot: async () => {
+        throw new Error('chunk failed to load')
+      },
+      departments: DEPARTMENTS,
+      now: NOW,
+    })
+    expect(result.works).toEqual([])
+    expect(result.notice).toBe(LOAD_FAILED)
     expect(readCache(NOW)).toBeNull()
   })
 

@@ -28,6 +28,12 @@ describe('searchWorks', () => {
     expect(ids(searchWorks(works, 'cezanne'))).toEqual([4])
   })
 
+  it('needs every word, found in the title or the artist', () => {
+    expect(ids(searchWorks(works, 'monet water'))).toEqual([1])
+    expect(ids(searchWorks(works, '  renoir   portrait '))).toEqual([3])
+    expect(searchWorks(works, 'monet apples')).toEqual([])
+  })
+
   it('returns nothing when no work matches', () => {
     expect(searchWorks(works, 'zzzz')).toEqual([])
   })
@@ -133,6 +139,15 @@ describe('buildRooms', () => {
     ])
     expect(rooms.every((r) => !r.dimmed)).toBe(true)
     expect(ids(rooms[0].works)).toEqual([2, 3])
+  })
+
+  it('puts a work with no department in the "Other works" room', () => {
+    const rooms = buildRooms([work({ id: 9, department: null })], departments, {
+      departments: [],
+      types: [],
+    })
+    expect(rooms.map((r) => r.department)).toEqual(['Other works'])
+    expect(ids(rooms[0].works)).toEqual([9])
   })
 
   it('dims a room with no matching works and empties it (AE2)', () => {

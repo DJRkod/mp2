@@ -5,7 +5,7 @@ export type StarterSource = 'cache' | 'live' | 'mixed' | 'snapshot'
 export type SearchState =
   | { status: 'idle' }
   | { status: 'searching'; query: string }
-  | { status: 'done'; query: string; found: number; added: number }
+  | { status: 'done'; query: string; found: number; added: number; ids: number[] }
   | { status: 'error'; query: string; message: string }
 
 export interface CollectionState {
@@ -84,6 +84,7 @@ export function collectionReducer(
           query: action.query,
           found: action.works.length,
           added: fresh.length,
+          ids: action.works.map((work) => work.id),
         },
       }
     }

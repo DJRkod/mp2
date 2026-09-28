@@ -43,7 +43,13 @@ describe('collectionReducer', () => {
       works: [work({ id: 2, title: 'Changed' }), work({ id: 50 }), work({ id: 51 })],
     })
     expect(ids(allWorks(state))).toEqual([1, 2, 3, 50, 51])
-    expect(state.search).toEqual({ status: 'done', query: 'monet', found: 3, added: 2 })
+    expect(state.search).toEqual({
+      status: 'done',
+      query: 'monet',
+      found: 3,
+      added: 2,
+      ids: [2, 50, 51],
+    })
   })
 
   it('keeps the default order to the starter works after a search', () => {

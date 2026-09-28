@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { searchWorks } from '../browse/search'
 import { SORT_DIRECTIONS, SORT_KEYS, sortWorks } from '../browse/sort'
@@ -37,14 +37,35 @@ export function ListView() {
   const [params, setParams] = useSearchParams()
   const location = useLocation()
 
-  const query = params.get('q') ?? ''
+  const urlQuery = params.get('q') ?? ''
   const sort = oneOf(params.get('sort'), SORT_KEYS, 'title')
   const direction = oneOf(params.get('dir'), SORT_DIRECTIONS, 'asc')
 
-  const visible = useMemo(
-    () => sortWorks(searchWorks(works, query), sort, direction),
-    [works, query, sort, direction],
-  )
+  // The box keeps its own text so typing is never a step behind the address,
+  // and follows the address when it changes from outside (back and forward).
+  const [query, setQuery] = useState(urlQuery)
+  const [syncedQuery, setSyncedQuery] = useState(urlQuery)
+  if (urlQuery !== syncedQuery) {
+    setSyncedQuery(urlQuery)
+    setQuery(urlQuery)
+  }
+
+  const searchText = query.trim()
+  const search = state.search
+  const searchIsCurrent = search.status !== 'idle' && search.query === searchText
+  const museumIds = searchIsCurrent && search.status === 'done' ? search.ids : null
+
+  const visible = useMemo(() => {
+    const matches = searchWorks(works, query)
+    if (!museumIds) return sortWorks(matches, sort, direction)
+    // The museum matches on word forms ("lilies" finds "Lily"), so its results
+    // are shown even when the plain text match would leave them out.
+    const shown = new Set(matches.map((work) => work.id))
+    const extra = works.filter(
+      (work) => museumIds.includes(work.id) && !shown.has(work.id),
+    )
+    return sortWorks([...matches, ...extra], sort, direction)
+  }, [works, query, sort, direction, museumIds])
 
   function update(name: string, value: string, fallback: string) {
     const next = new URLSearchParams(params)
@@ -58,9 +79,11 @@ export function ListView() {
     saveTrail(makeTrail(visible, location.pathname + location.search))
   }
 
-  const searchText = query.trim()
-  const search = state.search
-  const searchIsCurrent = search.status !== 'idle' && search.query === searchText
+  function type(value: string) {
+    setQuery(value)
+    setSyncedQuery(value)
+    update('q', value, '')
+  }
 
   return (
     <section aria-labelledby="list-heading">
@@ -81,7 +104,7 @@ export function ListView() {
             value={query}
             placeholder="Try “Monet” or “rain”"
             autoComplete="off"
-            onChange={(event) => update('q', event.target.value, '')}
+            onChange={(event) => type(event.target.value)}
           />
         </label>
 

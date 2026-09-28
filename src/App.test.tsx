@@ -1,7 +1,11 @@
-import { fireEvent, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { StrictMode } from 'react'
+import { MemoryRouter } from 'react-router-dom'
+import { describe, expect, it, vi } from 'vitest'
+import App from './App'
+import { CollectionProvider } from './collection/CollectionProvider'
 import { work } from './test/fixtures'
-import { renderApp } from './test/renderApp'
+import { TEST_DEPARTMENTS, renderApp } from './test/renderApp'
 
 const works = [
   work({ id: 27992, title: 'A Sunday on La Grande Jatte', department: 'Arts of Asia' }),
@@ -43,6 +47,53 @@ describe('routes', () => {
       'href',
       '/',
     )
+  })
+})
+
+describe('starter collection', () => {
+  it('loads each department once under StrictMode', async () => {
+    const loadDepartment = vi.fn(async (department: string) =>
+      works.filter((item) => item.department === department),
+    )
+    render(
+      <StrictMode>
+        <MemoryRouter>
+          <CollectionProvider
+            client={{ loadDepartment, searchMuseum: async () => [], fetchArtwork: async () => null }}
+            departments={TEST_DEPARTMENTS}
+            loadSnapshot={async () => []}
+          >
+            <App />
+          </CollectionProvider>
+        </MemoryRouter>
+      </StrictMode>,
+    )
+    await screen.findByText('2 artworks')
+    expect(loadDepartment).toHaveBeenCalledTimes(TEST_DEPARTMENTS.length)
+  })
+
+  it('leaves the loading state and says so when nothing can be loaded', async () => {
+    render(
+      <MemoryRouter>
+        <CollectionProvider
+          client={{
+            loadDepartment: async () => {
+              throw new Error('down')
+            },
+            searchMuseum: async () => [],
+            fetchArtwork: async () => null,
+          }}
+          departments={TEST_DEPARTMENTS}
+          loadSnapshot={async () => {
+            throw new Error('chunk failed to load')
+          }}
+        >
+          <App />
+        </CollectionProvider>
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText(/The collection could not be loaded/)).toBeVisible()
+    expect(screen.queryByText('Loading the collection…')).toBeNull()
   })
 })
 

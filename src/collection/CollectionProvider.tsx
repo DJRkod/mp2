@@ -12,7 +12,7 @@ import {
   starterWorks,
 } from './collectionReducer'
 import { DEPARTMENTS } from './departments'
-import { loadStarter } from './loadStarter'
+import { LOAD_FAILED, loadStarter } from './loadStarter'
 
 async function loadBundledSnapshot(): Promise<Artwork[]> {
   const module = await import('../data/starter-snapshot.json')
@@ -44,7 +44,17 @@ export function CollectionProvider({
       loadSnapshot,
       departments,
       now: Date.now(),
-    }).then((result) => dispatch({ type: 'starterLoaded', ...result }))
+    }).then(
+      (result) => dispatch({ type: 'starterLoaded', ...result }),
+      // Whatever went wrong, leave the loading state and say so.
+      () =>
+        dispatch({
+          type: 'starterLoaded',
+          works: [],
+          source: 'snapshot',
+          notice: LOAD_FAILED,
+        }),
+    )
   }, [client, departments, loadSnapshot])
 
   const searchMuseum = useCallback(

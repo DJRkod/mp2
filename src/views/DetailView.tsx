@@ -80,6 +80,8 @@ export function DetailView() {
   useEffect(() => {
     if (previousId === undefined || nextId === undefined) return
     function onKey(event: KeyboardEvent) {
+      // A held key repeats; one press is one step.
+      if (event.repeat) return
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
       if (isTyping(event.target)) return
       if (event.key === 'ArrowLeft') goTo(`/artwork/${previousId}`)

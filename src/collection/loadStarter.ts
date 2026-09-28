@@ -15,6 +15,9 @@ interface Options {
   now: number
 }
 
+export const LOAD_FAILED =
+  'The collection could not be loaded. Check your connection and reload the page.'
+
 function unique(works: Artwork[]): Artwork[] {
   const seen = new Set<number>()
   return works.filter((work) => !seen.has(work.id) && seen.add(work.id))
@@ -46,7 +49,8 @@ export async function loadStarter({
     return { works, source: 'live', notice: null }
   }
 
-  const snapshot = await loadSnapshot()
+  // The snapshot is a separate download, so it can fail too.
+  const snapshot = await loadSnapshot().catch((): Artwork[] => [])
   const filled = rooms.map((room, index) =>
     room.length > 0
       ? room
@@ -54,6 +58,9 @@ export async function loadStarter({
   )
   const works = unique(filled.flat())
 
+  if (works.length === 0) {
+    return { works, source: 'snapshot', notice: LOAD_FAILED }
+  }
   if (missing.length === departments.length) {
     return {
       works,

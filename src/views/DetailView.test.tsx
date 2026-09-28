@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { ApiError } from '../api/artic'
@@ -86,6 +86,15 @@ describe('DetailView', () => {
     await title('Fourth')
     await user.keyboard('{ArrowLeft}{ArrowLeft}')
     await title('Second')
+  })
+
+  it('ignores arrow keys while typing in a field and while a key is held', async () => {
+    saveTrail(makeTrail(works.slice(0, 5), '/'))
+    renderApp('/artwork/3', { works })
+    await title('Third')
+    fireEvent.keyDown(window, { key: 'ArrowRight', repeat: true })
+    fireEvent.keyDown(window, { key: 'ArrowRight', ctrlKey: true })
+    expect(screen.getByTestId('address')).toHaveTextContent('/artwork/3')
   })
 
   it('shows two neighbours on each side and opens one, keeping the trail', async () => {

@@ -9,12 +9,15 @@ export function normalize(value: string): string {
     .trim()
 }
 
+/**
+ * Works whose title and artist together contain every word of the query, so
+ * "monet water" finds Water Lilies by Claude Monet.
+ */
 export function searchWorks(works: Artwork[], query: string): Artwork[] {
-  const needle = normalize(query)
-  if (!needle) return works
-  return works.filter(
-    (work) =>
-      normalize(work.title ?? '').includes(needle) ||
-      normalize(work.artist ?? '').includes(needle),
-  )
+  const words = normalize(query).split(/\s+/).filter(Boolean)
+  if (words.length === 0) return works
+  return works.filter((work) => {
+    const text = normalize(`${work.title ?? ''} ${work.artist ?? ''}`)
+    return words.every((word) => text.includes(word))
+  })
 }

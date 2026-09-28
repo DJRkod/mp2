@@ -136,9 +136,13 @@ export function createArticClient(adapter?: AxiosAdapter) {
           bool: {
             filter: PUBLIC_WITH_IMAGE,
             must: {
+              // Every word must appear, in the title or the artist, which is
+              // the same rule the List applies to the collection.
               multi_match: {
                 query: searchText,
                 fields: ['title', 'artist_title'],
+                type: 'cross_fields',
+                operator: 'and',
               },
             },
           },

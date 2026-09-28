@@ -136,6 +136,8 @@ describe('searchMuseum', () => {
     expect(uri).toContain('[must][multi_match][query]=monet')
     expect(uri).toContain('[must][multi_match][fields][0]=title')
     expect(uri).toContain('[must][multi_match][fields][1]=artist_title')
+    expect(uri).toContain('[must][multi_match][type]=cross_fields')
+    expect(uri).toContain('[must][multi_match][operator]=and')
     expect(uri).toContain('limit=100')
     expect(uri).not.toMatch(/[?&]q=/)
   })

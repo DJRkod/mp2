@@ -116,6 +116,27 @@ describe('ListView', () => {
     expect(rowLinks()).toEqual(['/artwork/50', '/artwork/2'])
   })
 
+  it('shows a museum match that the plain text match would leave out', async () => {
+    const user = userEvent.setup()
+    const museum = [work({ id: 60, title: 'Water Lily Pond', artist: 'Claude Monet', department: 'Modern Art' })]
+    renderApp('/?q=lilies', { works, museum })
+    await ready()
+    expect(rowLinks()).toEqual(['/artwork/2'])
+    await user.click(screen.getByRole('button', { name: /Search the full museum/ }))
+    expect(await screen.findByRole('link', { name: /Water Lily Pond/ })).toBeVisible()
+    expect(rowLinks()).toEqual(['/artwork/2', '/artwork/60'])
+  })
+
+  it('keeps the typed text when editing the middle of a search', async () => {
+    const user = userEvent.setup()
+    renderApp('/?q=rain', { works })
+    await ready()
+    const box = screen.getByRole('searchbox', { name: 'Search' })
+    await user.type(box, 'T', { initialSelectionStart: 0, initialSelectionEnd: 0 })
+    expect(box).toHaveValue('Train')
+    expect(screen.getByTestId('address')).toHaveTextContent('/?q=Train')
+  })
+
   it('shows an error and keeps the rows when the full-museum search fails (AE5)', async () => {
     const user = userEvent.setup()
     renderApp('/?q=rain', { works, museum: new ApiError('Could not reach the Art Institute API.') })
