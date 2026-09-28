@@ -158,10 +158,19 @@ describe('artwork images', () => {
     expect(await screen.findByRole('img', { name: 'Untitled artwork' })).toBeVisible()
   })
 
+  it('try a best-fit size when the usual thumbnail is refused', async () => {
+    renderApp('/', { works })
+    const image = await screen.findByRole('img', { name: 'A Sunday on La Grande Jatte' })
+    fireEvent.error(image)
+    const second = await screen.findByRole('img', { name: 'A Sunday on La Grande Jatte' })
+    expect(second.getAttribute('src')).toContain('/full/!200,200/0/default.jpg')
+  })
+
   it('show a placeholder when the image fails to load', async () => {
     renderApp('/', { works })
     const image = await screen.findByRole('img', { name: 'A Sunday on La Grande Jatte' })
     fireEvent.error(image)
+    fireEvent.error(await screen.findByRole('img', { name: 'A Sunday on La Grande Jatte' }))
     const placeholder = await screen.findByRole('img', { name: 'A Sunday on La Grande Jatte' })
     expect(placeholder).toHaveTextContent('Image unavailable')
   })

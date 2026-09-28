@@ -198,7 +198,13 @@ describe('imageUrl', () => {
       'https://www.artic.edu/iiif/2/abc/full/200,/0/default.jpg',
     )
     expect(imageUrl('abc', 'full')).toBe(
-      'https://www.artic.edu/iiif/2/abc/full/843,/0/default.jpg',
+      'https://www.artic.edu/iiif/2/abc/full/!843,843/0/default.jpg',
+    )
+  })
+
+  it('builds a best-fit thumbnail for a picture smaller than the usual one', () => {
+    expect(imageUrl('abc', 'thumb-fit')).toBe(
+      'https://www.artic.edu/iiif/2/abc/full/!200,200/0/default.jpg',
     )
   })
 })

@@ -128,8 +128,8 @@ describe('moving between artworks', () => {
     saveTrail(makeTrail(works.slice(0, 5), '/'))
     renderApp('/artwork/3', { works })
     await title('Third')
-    expect(asked.some((src) => src.includes('image-2/full/843'))).toBe(true)
-    expect(asked.some((src) => src.includes('image-4/full/843'))).toBe(true)
+    expect(asked.some((src) => src.includes('image-2/full/!843,843'))).toBe(true)
+    expect(asked.some((src) => src.includes('image-4/full/!843,843'))).toBe(true)
   })
 })
 
@@ -148,7 +148,7 @@ describe('DetailView', () => {
     expect(screen.getByText('1 of 7')).toBeVisible()
     const figure = screen.getByRole('figure')
     expect(within(figure).getByRole('img', { name: 'The Bedroom' }).getAttribute('src')).toContain(
-      '/full/843,/0/default.jpg',
+      '/full/!843,843/0/default.jpg',
     )
   })
 

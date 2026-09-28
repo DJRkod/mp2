@@ -84,9 +84,21 @@ function displayable(error: unknown): ApiError {
   )
 }
 
-export function imageUrl(imageId: string, size: 'thumb' | 'full'): string {
-  const width = size === 'full' ? 843 : 200
-  return `${IIIF_BASE}/${imageId}/full/${width},/0/default.jpg`
+export type ImageSize = 'thumb' | 'thumb-fit' | 'full'
+
+/**
+ * The museum never enlarges a picture, and refuses a request that would. A
+ * size such as "843," asks for that exact width, so it fails for a smaller
+ * original; "!843,843" asks for the best fit within that box and always works.
+ */
+const IMAGE_SIZES: Record<ImageSize, string> = {
+  thumb: '200,',
+  'thumb-fit': '!200,200',
+  full: '!843,843',
+}
+
+export function imageUrl(imageId: string, size: ImageSize): string {
+  return `${IIIF_BASE}/${imageId}/full/${IMAGE_SIZES[size]}/0/default.jpg`
 }
 
 export function createArticClient(adapter?: AxiosAdapter) {

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { imageUrl } from '../api/artic'
+import type { ImageSize } from '../api/artic'
 import styles from './ArtworkImage.module.css'
 
 interface Props {
@@ -12,6 +13,12 @@ interface Props {
   eager?: boolean
 }
 
+/** The sizes to try, in order. A thumbnail has a best-fit size to fall back on. */
+const ATTEMPTS: Record<Props['size'], ImageSize[]> = {
+  thumb: ['thumb', 'thumb-fit'],
+  full: ['full'],
+}
+
 export function ArtworkImage({
   imageId,
   title,
@@ -19,10 +26,12 @@ export function ArtworkImage({
   fit = 'cover',
   eager = false,
 }: Props) {
-  const [failedId, setFailedId] = useState<string | null>(null)
+  const [failures, setFailures] = useState({ imageId, count: 0 })
+  const failed = failures.imageId === imageId ? failures.count : 0
+  const attempt = ATTEMPTS[size][failed]
   const alt = title ?? 'Untitled artwork'
 
-  if (failedId === imageId) {
+  if (!attempt) {
     return (
       <span className={styles.placeholder} role="img" aria-label={alt}>
         Image unavailable
@@ -33,13 +42,13 @@ export function ArtworkImage({
   return (
     <img
       className={`${styles.image} ${styles[fit]}`}
-      src={imageUrl(imageId, size)}
+      src={imageUrl(imageId, attempt)}
       alt={alt}
       loading={eager ? 'eager' : 'lazy'}
       decoding={eager ? 'sync' : 'async'}
       // The image server refuses requests referred from localhost.
       referrerPolicy="no-referrer"
-      onError={() => setFailedId(imageId)}
+      onError={() => setFailures({ imageId, count: failed + 1 })}
     />
   )
 }
