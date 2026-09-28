@@ -1,0 +1,41 @@
+:root {
+  /* Colour */
+  --wall: #f4f0e7;
+  --paper: #fffdf8;
+  --ink: #1e1b17;
+  --muted: #655f55;
+  --line: #d8d0bf;
+  --accent: #7b2d2d;
+  --accent-strong: #5e1f1f;
+  --on-accent: #fffaf2;
+  --room-wall: #2c3a35;
+  --room-wall-soft: #38483f;
+  --on-room: #f1ebdc;
+  --frame: #b89654;
+  --frame-dark: #8a6d35;
+  --focus: #1f5fa8;
+
+  /* Type */
+  --serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua',
+    Georgia, serif;
+  --sans: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --text-xs: 0.78rem;
+  --text-sm: 0.9rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.7rem;
+  --text-2xl: 2.4rem;
+
+  /* Space */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius: 3px;
+  --page-width: 76rem;
+  --shadow: 0 1px 2px rgb(30 27 23 / 12%), 0 6px 16px rgb(30 27 23 / 10%);
+}

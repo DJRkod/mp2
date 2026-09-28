@@ -1,0 +1,10 @@
+.notFound {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-7) 0;
+  text-align: center;
+}
+
+.notFound h1 {
+  font-size: var(--text-xl);
+}

@@ -8,8 +8,12 @@ export interface CollectionValue {
   works: Artwork[]
   /** The starter collection in its default order. */
   starter: Artwork[]
+  /** Department names in room order. */
+  departments: string[]
   searchMuseum: (query: string) => Promise<void>
   clearSearch: () => void
+  /** One artwork by id, or null when it may not be shown. */
+  fetchArtwork: (id: number) => Promise<Artwork | null>
 }
 
 export const CollectionContext = createContext<CollectionValue | null>(null)

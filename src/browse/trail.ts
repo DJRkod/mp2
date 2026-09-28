@@ -93,7 +93,11 @@ function isTrail(value: unknown): value is Trail {
   )
 }
 
+// Kept in memory as well, so the trail still works when storage is blocked.
+let current: Trail | null = null
+
 export function saveTrail(trail: Trail): void {
+  current = trail
   try {
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(trail))
   } catch {
@@ -101,7 +105,17 @@ export function saveTrail(trail: Trail): void {
   }
 }
 
+export function clearTrail(): void {
+  current = null
+  try {
+    window.sessionStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // Nothing to clear.
+  }
+}
+
 export function loadTrail(): Trail | null {
+  if (current) return current
   try {
     const saved = window.sessionStorage.getItem(STORAGE_KEY)
     if (!saved) return null

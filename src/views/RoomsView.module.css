@@ -1,0 +1,139 @@
+.intro {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-5);
+}
+
+.intro h1 {
+  font-size: var(--text-2xl);
+}
+
+.intro p {
+  max-width: 44rem;
+  color: var(--muted);
+}
+
+.filters {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.filterSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 2.25rem;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.clear {
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.hint {
+  margin-bottom: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.corridor {
+  display: flex;
+  gap: var(--space-4);
+  overflow-x: auto;
+  padding-bottom: var(--space-4);
+  scroll-snap-type: x proximity;
+  scrollbar-color: var(--frame-dark) var(--line);
+}
+
+.room {
+  flex: none;
+  width: min(34rem, 86vw);
+  padding: var(--space-4);
+  border-top: 10px solid var(--frame-dark);
+  border-bottom: 14px solid #5b4a36;
+  background: var(--room-wall);
+  color: var(--on-room);
+  box-shadow: var(--shadow);
+  scroll-snap-align: start;
+  transition: opacity 0.2s ease;
+}
+
+.dimmed {
+  width: min(17rem, 60vw);
+  opacity: 0.4;
+}
+
+.sign {
+  display: inline-grid;
+  gap: 2px;
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 35%);
+}
+
+.sign h2 {
+  font-size: var(--text-lg);
+}
+
+.sign p {
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.wall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: var(--space-3);
+}
+
+.frame {
+  display: block;
+  aspect-ratio: 1;
+  border: 5px solid var(--frame);
+  outline: 1px solid var(--frame-dark);
+  background: var(--room-wall-soft);
+  box-shadow: 0 3px 6px rgb(0 0 0 / 40%);
+  transition: transform 0.15s ease;
+}
+
+.frame:hover {
+  transform: scale(1.05);
+}
+
+.frame:focus-visible {
+  outline: 3px solid var(--on-room);
+  outline-offset: 2px;
+}
+
+@media (max-width: 40rem) {
+  .room {
+    width: 88vw;
+    scroll-snap-align: center;
+  }
+
+  .dimmed {
+    width: 60vw;
+  }
+
+  .corridor {
+    scroll-snap-type: x mandatory;
+  }
+}

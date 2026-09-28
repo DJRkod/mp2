@@ -1,0 +1,99 @@
+.intro {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.intro h1 {
+  font-size: var(--text-2xl);
+}
+
+.intro p {
+  max-width: 44rem;
+  color: var(--muted);
+}
+
+.summary {
+  margin-bottom: var(--space-3);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.axis {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding: var(--space-4) var(--space-2) var(--space-3);
+  scrollbar-color: var(--frame-dark) var(--line);
+}
+
+.period {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Column widths hold 3, 5 or 8 thumbnails a row. */
+.small {
+  width: 11.5rem;
+}
+
+.medium {
+  width: 19.5rem;
+}
+
+.large {
+  width: 31.5rem;
+}
+
+/* Works fill rows from the axis upward, oldest at the bottom left. */
+.stack {
+  display: flex;
+  flex-wrap: wrap-reverse;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+}
+
+.item {
+  display: block;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 3px solid var(--frame);
+  background: var(--line);
+  transition: transform 0.15s ease;
+}
+
+.item:hover {
+  transform: scale(1.08);
+}
+
+.tick {
+  position: relative;
+  padding-top: var(--space-3);
+  border-top: 3px solid var(--ink);
+}
+
+.tick::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 3px;
+  height: 0.9rem;
+  background: var(--ink);
+}
+
+.tick h2 {
+  padding-left: var(--space-2);
+  font-size: var(--text-md);
+}
+
+.tick p {
+  padding-left: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

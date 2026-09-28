@@ -14,17 +14,24 @@ import {
 import { DEPARTMENTS } from './departments'
 import { loadStarter } from './loadStarter'
 
-async function loadSnapshot(): Promise<Artwork[]> {
+async function loadBundledSnapshot(): Promise<Artwork[]> {
   const module = await import('../data/starter-snapshot.json')
   return module.default as Artwork[]
 }
 
 interface Props {
   children: ReactNode
-  client?: Pick<ArticClient, 'loadDepartment' | 'searchMuseum'>
+  client?: Pick<ArticClient, 'loadDepartment' | 'searchMuseum' | 'fetchArtwork'>
+  departments?: string[]
+  loadSnapshot?: () => Promise<Artwork[]>
 }
 
-export function CollectionProvider({ children, client = artic }: Props) {
+export function CollectionProvider({
+  children,
+  client = artic,
+  departments = DEPARTMENTS,
+  loadSnapshot = loadBundledSnapshot,
+}: Props) {
   const [state, dispatch] = useReducer(collectionReducer, initialState)
   const started = useRef(false)
 
@@ -35,10 +42,10 @@ export function CollectionProvider({ children, client = artic }: Props) {
     loadStarter({
       loadDepartment: client.loadDepartment,
       loadSnapshot,
-      departments: DEPARTMENTS,
+      departments,
       now: Date.now(),
     }).then((result) => dispatch({ type: 'starterLoaded', ...result }))
-  }, [client])
+  }, [client, departments, loadSnapshot])
 
   const searchMuseum = useCallback(
     async (query: string) => {
@@ -62,10 +69,12 @@ export function CollectionProvider({ children, client = artic }: Props) {
       state,
       works: allWorks(state),
       starter: starterWorks(state),
+      departments,
       searchMuseum,
       clearSearch,
+      fetchArtwork: client.fetchArtwork,
     }),
-    [state, searchMuseum, clearSearch],
+    [state, searchMuseum, clearSearch, client, departments],
   )
 
   return <CollectionContext value={value}>{children}</CollectionContext>

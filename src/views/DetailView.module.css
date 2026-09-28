@@ -1,0 +1,173 @@
+.detail {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.back {
+  font-weight: 600;
+}
+
+.position {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+  gap: var(--space-6);
+}
+
+.figure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 20rem;
+  margin: 0;
+  padding: var(--space-5);
+  background: var(--room-wall);
+  box-shadow: var(--shadow);
+}
+
+/* The frame hugs the image, whatever its proportions. */
+.frame {
+  min-width: 6rem;
+  min-height: 6rem;
+  border: 8px solid var(--frame);
+  outline: 1px solid var(--frame-dark);
+  background: var(--room-wall-soft);
+  box-shadow: 0 6px 14px rgb(0 0 0 / 45%);
+}
+
+/* The museum wall label beside the work. */
+.label {
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.label h1 {
+  margin-bottom: var(--space-4);
+  font-size: var(--text-xl);
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: grid;
+  margin: 0;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line);
+}
+
+.fact dt {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.9;
+}
+
+.fact dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.walk {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.step {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.step:hover {
+  background: var(--accent-strong);
+  color: var(--on-accent);
+}
+
+.keys {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.missing {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-7) 0;
+  text-align: center;
+}
+
+.missing h1 {
+  font-size: var(--text-xl);
+}
+
+@media (max-width: 52rem) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+
+  .figure {
+    min-height: 14rem;
+    padding: var(--space-3);
+  }
+}
+
+@media (max-width: 40rem) {
+  .walk {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  /* The strip takes its own row above the two buttons. */
+  .walk > ul {
+    order: -1;
+    flex: 1 0 100%;
+  }
+
+  .fact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .keys {
+    display: none;
+  }
+}

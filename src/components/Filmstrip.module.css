@@ -1,0 +1,35 @@
+/* Thumbnails share the row's width and shrink together, so the strip never
+   makes the page scroll sideways. */
+.strip {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.cell {
+  flex: 0 1 4.5rem;
+  min-width: 0;
+}
+
+.thumb {
+  display: block;
+  aspect-ratio: 1;
+  border: 3px solid var(--line);
+  opacity: 0.75;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.thumb:hover {
+  opacity: 1;
+}
+
+.current {
+  border-color: var(--accent);
+  opacity: 1;
+  transform: scale(1.12);
+}

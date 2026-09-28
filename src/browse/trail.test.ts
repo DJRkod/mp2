@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { work } from '../test/fixtures'
 import { loadTrail, makeTrail, navigate, saveTrail, toEntry } from './trail'
 
@@ -84,6 +84,22 @@ describe('saved trail', () => {
     const trail = trailOf(3)
     saveTrail(trail)
     expect(loadTrail()).toEqual(trail)
+  })
+
+  it('is read back from storage after a page refresh', () => {
+    const trail = trailOf(3)
+    window.sessionStorage.setItem('mp2.trail.v1', JSON.stringify(trail))
+    expect(loadTrail()).toEqual(trail)
+  })
+
+  it('still works when storage refuses the write', () => {
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError')
+    })
+    const trail = trailOf(3)
+    saveTrail(trail)
+    expect(loadTrail()).toEqual(trail)
+    spy.mockRestore()
   })
 
   it('is null when nothing was saved', () => {

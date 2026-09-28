@@ -161,6 +161,15 @@ describe('bucketWorks', () => {
     ])
   })
 
+  it('labels periods before the common era', () => {
+    expect(makePeriods([-500, 1, 1000]).map((p) => p.label)).toEqual([
+      'Before 500 BCE',
+      '500–1 BCE',
+      '1–999',
+      '1000 and later',
+    ])
+  })
+
   it('puts works in period columns in year order', () => {
     const works = [
       work({ id: 1, year: 1930 }),

@@ -17,17 +17,24 @@ export interface PeriodColumn {
 /** Periods split at the given years, which must be in ascending order. */
 export function makePeriods(boundaries: number[]): Period[] {
   const periods: Period[] = [
-    { label: `Before ${boundaries[0]}`, from: null, until: boundaries[0] },
+    { label: `Before ${yearLabel(boundaries[0])}`, from: null, until: boundaries[0] },
   ]
   boundaries.forEach((from, index) => {
     const until = boundaries[index + 1] ?? null
-    periods.push({
-      label: until === null ? `${from} and later` : `${from}–${until - 1}`,
-      from,
-      until,
-    })
+    periods.push({ label: rangeLabel(from, until), from, until })
   })
   return periods
+}
+
+/** Years below 1 are before the common era: -500 is 500 BCE. */
+function yearLabel(year: number): string {
+  return year < 1 ? `${-year} BCE` : String(year)
+}
+
+function rangeLabel(from: number, until: number | null): string {
+  if (until === null) return `${yearLabel(from)} and later`
+  if (until <= 1) return `${-from}–${Math.max(1, 1 - until)} BCE`
+  return `${yearLabel(from)}–${until - 1}`
 }
 
 function holds(period: Period, year: number): boolean {
