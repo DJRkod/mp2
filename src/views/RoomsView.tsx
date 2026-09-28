@@ -8,6 +8,7 @@ import { makeTrail, saveTrail } from '../browse/trail'
 import { useCollection } from '../collection/CollectionContext'
 import { ArtworkImage } from '../components/ArtworkImage'
 import { FilterChips } from '../components/FilterChips'
+import { PageIntro } from '../components/PageIntro'
 import { StatusMessage } from '../components/StatusMessage'
 import { usePageTitle } from '../components/usePageTitle'
 import styles from './RoomsView.module.css'
@@ -55,13 +56,10 @@ export function RoomsView() {
 
   return (
     <section aria-labelledby="rooms-heading">
-      <header className={styles.intro}>
-        <h1 id="rooms-heading">The rooms</h1>
-        <p>
-          One room for each department. Choose any number of filters; rooms with
-          nothing to show are dimmed.
-        </p>
-      </header>
+      <PageIntro headingId="rooms-heading" title="The rooms">
+        One room for each department. Choose any number of filters; rooms with
+        nothing to show are dimmed.
+      </PageIntro>
 
       {state.status === 'loading' ? (
         <StatusMessage kind="loading">Hanging the collection…</StatusMessage>

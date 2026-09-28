@@ -1,18 +1,3 @@
-.intro {
-  display: grid;
-  gap: var(--space-1);
-  margin-bottom: var(--space-4);
-}
-
-.intro h1 {
-  font-size: var(--text-2xl);
-}
-
-.intro p {
-  max-width: 44rem;
-  color: var(--muted);
-}
-
 .summary {
   margin-bottom: var(--space-3);
   color: var(--muted);

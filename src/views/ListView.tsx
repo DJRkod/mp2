@@ -6,6 +6,7 @@ import type { SortDirection, SortKey } from '../browse/sort'
 import { makeTrail, saveTrail } from '../browse/trail'
 import { useCollection } from '../collection/CollectionContext'
 import { ArtworkImage } from '../components/ArtworkImage'
+import { PageIntro } from '../components/PageIntro'
 import { StatusMessage } from '../components/StatusMessage'
 import { usePageTitle } from '../components/usePageTitle'
 import { formatYear, orUnknown } from './format'
@@ -63,10 +64,9 @@ export function ListView() {
 
   return (
     <section aria-labelledby="list-heading">
-      <header className={styles.intro}>
-        <h1 id="list-heading">The collection</h1>
-        <p>Search by title or artist, and sort the results.</p>
-      </header>
+      <PageIntro headingId="list-heading" title="The collection">
+        Search by title or artist, and sort the results.
+      </PageIntro>
 
       <form
         className={styles.controls}

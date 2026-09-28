@@ -5,6 +5,7 @@ import { TIMELINE_PERIODS, columnSize } from '../browse/timelinePeriods'
 import { makeTrail, saveTrail } from '../browse/trail'
 import { useCollection } from '../collection/CollectionContext'
 import { ArtworkImage } from '../components/ArtworkImage'
+import { PageIntro } from '../components/PageIntro'
 import { StatusMessage } from '../components/StatusMessage'
 import { usePageTitle } from '../components/usePageTitle'
 import styles from './TimelineView.module.css'
@@ -26,13 +27,10 @@ export function TimelineView() {
 
   return (
     <section aria-labelledby="timeline-heading">
-      <header className={styles.intro}>
-        <h1 id="timeline-heading">The timeline</h1>
-        <p>
-          The collection in order of date, oldest on the left. Previous and next
-          on an artwork&rsquo;s page walk through time.
-        </p>
-      </header>
+      <PageIntro headingId="timeline-heading" title="The timeline">
+        The collection in order of date, oldest on the left. Previous and next
+        on an artwork&rsquo;s page walk through time.
+      </PageIntro>
 
       {state.status === 'loading' ? (
         <StatusMessage kind="loading">Dating the collection…</StatusMessage>
