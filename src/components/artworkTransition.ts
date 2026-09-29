@@ -1,5 +1,6 @@
 import { flushSync } from 'react-dom'
 import { imageUrl } from '../api/artic'
+import type { ImageSize } from '../api/artic'
 
 /** How long a step waits for the next picture before going ahead anyway. */
 const PRELOAD_LIMIT_MS = 1200
@@ -17,25 +18,48 @@ export function preloadImage(
 ): Promise<void> {
   let ready = pictures.get(imageId)
   if (!ready) {
-    const image = new Image()
-    image.referrerPolicy = 'no-referrer'
-    image.src = imageUrl(imageId, 'full')
-    ready =
-      typeof image.decode === 'function'
-        ? image.decode().then(
-            () => undefined,
-            () => undefined,
-          )
-        : Promise.resolve()
+    ready = loadFirstThatWorks(imageId)
     pictures.set(imageId, ready)
   }
   const limit = new Promise<void>((resolve) => setTimeout(resolve, limitMs))
   return Promise.race([ready, limit])
 }
 
+/** The large sizes to try, in order. See the note on sizes in the API client. */
+export const FULL_SIZES: ImageSize[] = ['full', 'full-fit']
+
+const working = new Map<string, ImageSize>()
+
+/** The large size known to load for a picture, if one has been found. */
+export function workingSize(imageId: string): ImageSize | undefined {
+  return working.get(imageId)
+}
+
+export function rememberWorkingSize(imageId: string, size: ImageSize): void {
+  working.set(imageId, size)
+}
+
+async function loadFirstThatWorks(imageId: string): Promise<void> {
+  for (const size of FULL_SIZES) {
+    const image = new Image()
+    image.referrerPolicy = 'no-referrer'
+    image.src = imageUrl(imageId, size)
+    // A browser that cannot decode ahead of time has nothing to wait for.
+    if (typeof image.decode !== 'function') return
+    try {
+      await image.decode()
+      working.set(imageId, size)
+      return
+    } catch {
+      // Refused or failed: try the next size.
+    }
+  }
+}
+
 /** Forgets which pictures were loaded, so each test starts afresh. */
 export function forgetPreloadedImages(): void {
   pictures.clear()
+  working.clear()
 }
 
 /** Forward for Next, back for Previous. */

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { preloadImage, withViewTransition } from './artworkTransition'
+import { preloadImage, withViewTransition, workingSize } from './artworkTransition'
 
 type Decode = () => Promise<void>
 const imagePrototype = HTMLImageElement.prototype as { decode?: Decode }
@@ -36,6 +36,27 @@ describe('preloadImage', () => {
     await preloadImage('asked-once')
     await preloadImage('asked-once')
     expect(decode).toHaveBeenCalledTimes(1)
+  })
+
+  it('tries a best fit when the usual size is refused, and remembers which worked', async () => {
+    const asked: string[] = []
+    imagePrototype.decode = function (this: HTMLImageElement) {
+      asked.push(this.src)
+      return asked.length === 1 ? Promise.reject(new Error('refused')) : Promise.resolve()
+    }
+    await preloadImage('small-original')
+    expect(asked.map((src) => src.match(/\/full\/([^/]+)\//)?.[1])).toEqual(['843,', '!843,843'])
+    expect(workingSize('small-original')).toBe('full-fit')
+  })
+
+  it('remembers the usual size when it works', async () => {
+    stubDecode(async () => {})
+    await preloadImage('large-original')
+    expect(workingSize('large-original')).toBe('full')
+  })
+
+  it('remembers nothing for a picture it has not loaded', () => {
+    expect(workingSize('never-asked')).toBeUndefined()
   })
 
   it('is ready even when the picture fails to load', async () => {

@@ -15,6 +15,28 @@
   max-height: min(68vh, 40rem);
 }
 
+/* Shown in the frame while a large picture is on its way. */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 12rem;
+  min-height: 12rem;
+  padding: var(--space-4);
+  color: var(--on-room);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* Until it has arrived the picture takes up no room, so the message is not
+   pushed aside by an empty box. */
+.arriving {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
 .placeholder {
   display: flex;
   align-items: center;

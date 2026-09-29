@@ -84,17 +84,22 @@ function displayable(error: unknown): ApiError {
   )
 }
 
-export type ImageSize = 'thumb' | 'thumb-fit' | 'full'
+export type ImageSize = 'thumb' | 'thumb-fit' | 'full' | 'full-fit'
 
 /**
- * The museum never enlarges a picture, and refuses a request that would. A
- * size such as "843," asks for that exact width, so it fails for a smaller
- * original; "!843,843" asks for the best fit within that box and always works.
+ * The museum makes each size of a picture when it is first asked for, which
+ * can take many seconds for a large original, and keeps it ready afterwards.
+ * "843," is the width it recommends and is the most likely to be ready.
+ *
+ * It never enlarges a picture, and refuses a request that would, so "843,"
+ * fails for an original narrower than that. The "fit" sizes ask for the best
+ * fit within a box, which is never refused but is less likely to be ready.
  */
 const IMAGE_SIZES: Record<ImageSize, string> = {
   thumb: '200,',
   'thumb-fit': '!200,200',
-  full: '!843,843',
+  full: '843,',
+  'full-fit': '!843,843',
 }
 
 export function imageUrl(imageId: string, size: ImageSize): string {
