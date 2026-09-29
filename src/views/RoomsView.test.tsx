@@ -27,6 +27,17 @@ async function ready() {
   await screen.findByText(/^\d+ artworks? (in \d+ rooms|match(es)? your filters)$/)
 }
 
+function typesGroup() {
+  return screen.getByRole('group', { name: /^Type of artwork/ })
+}
+
+function typeChips() {
+  return within(typesGroup())
+    .queryAllByRole('button', { pressed: undefined })
+    .filter((button) => button.hasAttribute('aria-pressed'))
+    .map((button) => button.textContent)
+}
+
 describe('RoomsView', () => {
   it('renders a room for every department with works', async () => {
     renderApp('/rooms', { works })
@@ -37,21 +48,44 @@ describe('RoomsView', () => {
     expect(screen.getByText('5 artworks in 3 rooms')).toBeVisible()
   })
 
-  it('offers the artwork types found in the starter collection', async () => {
+  it('shows the departments, and keeps the artwork types behind a toggle', async () => {
     renderApp('/rooms', { works })
     await ready()
-    const group = screen.getByRole('group', { name: /^Type of artwork/ })
-    expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Painting',
-      'Print',
-      'Sculpture',
-      'Textile',
-    ])
+    const departments = screen.getByRole('group', { name: /^Department/ })
+    expect(within(departments).getAllByRole('button')).toHaveLength(3)
+    expect(typeChips()).toEqual([])
+    const toggle = within(typesGroup()).getByRole('button', { name: 'Show all 4 types' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
   })
 
-  it('says that each row of filters scrolls sideways', async () => {
+  it('offers the artwork types found in the starter collection when opened', async () => {
+    const user = userEvent.setup()
     renderApp('/rooms', { works })
     await ready()
+    await user.click(screen.getByRole('button', { name: 'Show all 4 types' }))
+    expect(typeChips()).toEqual(['Painting', 'Print', 'Sculpture', 'Textile'])
+    const toggle = within(typesGroup()).getByRole('button', { name: 'Show fewer types' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await user.click(toggle)
+    expect(typeChips()).toEqual([])
+  })
+
+  it('keeps the chosen types in view while the rest are tucked away', async () => {
+    const user = userEvent.setup()
+    renderApp('/rooms?type=Print', { works })
+    await ready()
+    expect(typeChips()).toEqual(['Print'])
+    await user.click(screen.getByRole('button', { name: 'Print' }))
+    expect(typeChips()).toEqual([])
+    expect(worksIn('Arts of Asia')).toHaveLength(3)
+  })
+
+  it('says that a row of filters scrolls sideways, where there is a row', async () => {
+    const user = userEvent.setup()
+    renderApp('/rooms', { works })
+    await ready()
+    expect(screen.getAllByText('Scroll sideways for more')).toHaveLength(1)
+    await user.click(screen.getByRole('button', { name: 'Show all 4 types' }))
     expect(screen.getAllByText('Scroll sideways for more')).toHaveLength(2)
   })
 
@@ -59,6 +93,7 @@ describe('RoomsView', () => {
     const user = userEvent.setup()
     renderApp('/rooms', { works })
     await ready()
+    await user.click(screen.getByRole('button', { name: 'Show all 4 types' }))
     await user.click(screen.getByRole('button', { name: 'Painting' }))
     await user.click(screen.getByRole('button', { name: 'Print' }))
     expect(worksIn('Arts of Asia')).toEqual(['/artwork/1', '/artwork/3'])
@@ -106,9 +141,10 @@ describe('RoomsView', () => {
     renderApp('/?q=hay', { works, museum })
     await user.click(await screen.findByRole('button', { name: /Search the full museum/ }))
     await screen.findByRole('link', { name: /Haystack/ })
-    await user.click(screen.getByRole('link', { name: 'Rooms' }))
+    await user.click(screen.getByRole('link', { name: 'Gallery' }))
     await ready()
     expect(worksIn('Modern Art')).toEqual(['/artwork/5', '/artwork/50'])
+    await user.click(screen.getByRole('button', { name: 'Show all 4 types' }))
     expect(screen.queryByRole('button', { name: 'Mask' })).toBeNull()
   })
 })

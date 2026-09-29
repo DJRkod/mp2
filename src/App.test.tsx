@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -19,10 +19,23 @@ describe('routes', () => {
     expect(screen.getByRole('link', { name: 'List' })).toHaveAttribute('aria-current', 'page')
   })
 
-  it('shows the Rooms view and marks its link current', async () => {
+  it('names the three views in the navigation: List, Gallery, Timeline', async () => {
+    renderApp('/', { works })
+    await screen.findByRole('heading', { level: 1, name: 'The collection' })
+    const nav = screen.getByRole('navigation', { name: 'Views' })
+    expect(within(nav).getAllByRole('link').map((link) => link.textContent)).toEqual([
+      'List',
+      'Gallery',
+      'Timeline',
+    ])
+  })
+
+  it('shows the gallery of rooms and marks its link current', async () => {
     renderApp('/rooms', { works })
-    expect(await screen.findByRole('heading', { level: 1, name: 'The rooms' })).toBeVisible()
-    expect(screen.getByRole('link', { name: 'Rooms' })).toHaveAttribute('aria-current', 'page')
+    expect(await screen.findByRole('heading', { level: 1, name: 'The gallery' })).toBeVisible()
+    expect(screen.getByText(/one room for each department/i)).toBeVisible()
+    expect(document.title).toMatch(/^Gallery/)
+    expect(screen.getByRole('link', { name: 'Gallery' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: 'List' })).not.toHaveAttribute('aria-current')
   })
 

@@ -4,20 +4,19 @@
   font-size: var(--text-sm);
 }
 
+/* The axis runs along the top and each period's works hang below it, so the
+   page never opens on an empty space above a short column. */
 .axis {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--space-3);
   overflow-x: auto;
-  padding: var(--space-4) var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-4);
   scrollbar-color: var(--frame-dark) var(--line);
 }
 
 .period {
   flex: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
 }
 
 /* Column widths hold 3, 5 or 8 thumbnails a row. */
@@ -33,12 +32,12 @@
   width: 31.5rem;
 }
 
-/* Works fill rows from the axis upward, oldest at the bottom left. */
+/* Works fill rows downward from the axis, oldest at the top left. */
 .stack {
   display: flex;
-  flex-wrap: wrap-reverse;
+  flex-wrap: wrap;
   gap: var(--space-2);
-  padding-bottom: var(--space-3);
+  padding-top: var(--space-3);
 }
 
 .item {
@@ -57,6 +56,7 @@
 .tick {
   position: relative;
   padding-top: var(--space-3);
+  padding-bottom: var(--space-1);
   border-top: 3px solid var(--ink);
 }
 

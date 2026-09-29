@@ -29,7 +29,7 @@ type Fetched =
   | { id: number; status: 'error'; message: string }
 
 function backLabel(returnTo: string): string {
-  if (returnTo.startsWith('/rooms')) return 'Back to the rooms'
+  if (returnTo.startsWith('/rooms')) return 'Back to the gallery'
   if (returnTo.startsWith('/timeline')) return 'Back to the timeline'
   return 'Back to the list'
 }

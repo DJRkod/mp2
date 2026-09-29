@@ -49,6 +49,15 @@ describe('TimelineView', () => {
     expect(worksIn('Before 500 BCE')).toEqual(['/artwork/5'])
   })
 
+  it('puts each period’s name above its works, so nothing starts with a gap', async () => {
+    renderApp('/timeline', { works })
+    await ready()
+    const period = screen.getByRole('region', { name: '1875–1899' })
+    const heading = within(period).getByRole('heading', { level: 2 })
+    const list = within(period).getByRole('list')
+    expect(heading.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('gives a busy period a wider column', async () => {
     const busy = Array.from({ length: 45 }, (_, i) =>
       work({ id: 100 + i, year: 1880, department: 'Textiles' }),

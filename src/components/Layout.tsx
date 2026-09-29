@@ -5,7 +5,7 @@ import { StatusMessage } from './StatusMessage'
 
 const VIEWS = [
   { to: '/', label: 'List', end: true },
-  { to: '/rooms', label: 'Rooms', end: false },
+  { to: '/rooms', label: 'Gallery', end: false },
   { to: '/timeline', label: 'Timeline', end: false },
 ]
 

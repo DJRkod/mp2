@@ -49,6 +49,27 @@
   color: var(--accent);
 }
 
+.toggle {
+  min-height: 2.25rem;
+  margin-top: var(--space-2);
+  padding: var(--space-1) 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.toggle:hover {
+  color: var(--accent-strong);
+}
+
+/* With nothing chosen and the list tucked away, the button stands alone. */
+.legend + .toggle {
+  margin-top: 0;
+}
+
 .on,
 .on:hover {
   border-color: var(--accent);

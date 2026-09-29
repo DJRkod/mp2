@@ -54,6 +54,13 @@ export function TimelineView() {
                 className={`${styles.period} ${styles[columnSize(periodWorks.length)]}`}
                 aria-label={period.label}
               >
+                <header className={styles.tick}>
+                  <h2>{period.label}</h2>
+                  <p>
+                    {periodWorks.length}{' '}
+                    {periodWorks.length === 1 ? 'work' : 'works'}
+                  </p>
+                </header>
                 <ul className={styles.stack}>
                   {periodWorks.map((work) => (
                     <li key={work.id}>
@@ -71,13 +78,6 @@ export function TimelineView() {
                     </li>
                   ))}
                 </ul>
-                <header className={styles.tick}>
-                  <h2>{period.label}</h2>
-                  <p>
-                    {periodWorks.length}{' '}
-                    {periodWorks.length === 1 ? 'work' : 'works'}
-                  </p>
-                </header>
               </section>
             ))}
           </div>

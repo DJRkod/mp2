@@ -232,9 +232,9 @@ describe('moving between artworks', () => {
     renderApp('/artwork/3', { works })
     await title('Third')
     await user.click(screen.getByRole('link', { name: /Next/ }))
-    await user.click(screen.getByRole('link', { name: 'Rooms' }))
+    await user.click(screen.getByRole('link', { name: 'Gallery' }))
     pictureReady()
-    await screen.findByRole('heading', { level: 1, name: 'The rooms' })
+    await screen.findByRole('heading', { level: 1, name: 'The gallery' })
     await new Promise((resolve) => setTimeout(resolve, 20))
     expect(screen.getByTestId('address')).toHaveTextContent('/rooms')
   })
@@ -430,7 +430,7 @@ describe('DetailView', () => {
     saveTrail(makeTrail(works, '/rooms?type=Painting'))
     renderApp('/artwork/2', { works })
     await title('Second')
-    expect(screen.getByRole('link', { name: /Back to the rooms/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Back to the gallery/ })).toHaveAttribute(
       'href',
       '/rooms?type=Painting',
     )

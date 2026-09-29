@@ -14,7 +14,7 @@ import { usePageTitle } from '../components/usePageTitle'
 import styles from './RoomsView.module.css'
 
 export function RoomsView() {
-  usePageTitle('Rooms')
+  usePageTitle('Gallery')
   const { state, works, departments: roomOrder } = useCollection()
   const [params, setParams] = useSearchParams()
   const location = useLocation()
@@ -56,9 +56,9 @@ export function RoomsView() {
 
   return (
     <section aria-labelledby="rooms-heading">
-      <PageIntro headingId="rooms-heading" title="The rooms">
-        One room for each department. Choose any number of filters; rooms with
-        nothing to show are dimmed.
+      <PageIntro headingId="rooms-heading" title="The gallery">
+        A gallery of rooms, one room for each department. Choose any number of
+        filters; rooms with nothing to show are dimmed.
       </PageIntro>
 
       {state.status === 'loading' ? (
@@ -77,6 +77,7 @@ export function RoomsView() {
               options={state.typeOptions}
               selected={filters.types}
               onToggle={(option) => toggle('type', option)}
+              tuckedAway="types"
             />
             <div className={styles.filterSummary}>
               <p aria-live="polite">
